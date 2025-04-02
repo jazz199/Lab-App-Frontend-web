@@ -57,15 +57,7 @@ const HomeScreen = () => {
         <Text style={styles.buttonText}>Gestionar Equipos</Text>
       </TouchableOpacity>
 
-      {/* Listas de datos (opcional, puedes mantenerlas o quitarlas) */}
-      <Text style={styles.sectionTitle}>Usuarios</Text>
-      <UserList users={users} />
-
-      <Text style={styles.sectionTitle}>Laboratorios</Text>
-      <LaboratoryList laboratories={laboratories} />
-
-      <Text style={styles.sectionTitle}>Equipos</Text>
-      <EquipmentList equipment={equipment} />
+      
     </Layout>
   );
 };
