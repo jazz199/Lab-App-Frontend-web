@@ -18,9 +18,11 @@ const HomeScreen = () => {
       const userData = await getUsers();
       const labData = await getLaboratories();
       const equipData = await getEquipment();
+      const maintenData = await getMainten();
       setUsers(userData);
       setLaboratories(labData);
       setEquipment(equipData);
+      setMainten(equipData);
     } catch (error) {
       console.error('Error en loadData:', error);
     }
@@ -55,6 +57,13 @@ const HomeScreen = () => {
         onPress={() => navigation.navigate('Equipos')}
       >
         <Text style={styles.buttonText}>Gestionar Equipos</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={() => navigation.navigate('Mantenimiento')}
+      >
+        <Text style={styles.buttonText}>Gestionar Mantenimiento</Text>
       </TouchableOpacity>
 
       

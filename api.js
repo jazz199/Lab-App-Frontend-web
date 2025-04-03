@@ -35,3 +35,15 @@ export const getEquipment = async () => {
     throw error;
   }
 };
+
+
+export const getMaintenaint = async () => {
+  try {
+    const response = await fetch(`${BASE_API}/mantenimiento`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching Mantenimiento:', error);
+    throw error;
+  }
+};
