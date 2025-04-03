@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { getUsers, getLaboratories, getEquipment } from '../api';
+import { getUsers, getLaboratories, getEquipment, getMaintenaint } from '../api';
 import Layout from '../components/layout';
 import UserList from '../components/UserList';
 import LaboratoryList from '../components/LaboratoryList';
@@ -11,6 +11,7 @@ const HomeScreen = () => {
   const [users, setUsers] = useState([]);
   const [laboratories, setLaboratories] = useState([]);
   const [equipment, setEquipment] = useState([]);
+  const [mantenimiento, setMainten] = useState([]);
   const navigation = useNavigation();
 
   const loadData = async () => {
@@ -18,11 +19,11 @@ const HomeScreen = () => {
       const userData = await getUsers();
       const labData = await getLaboratories();
       const equipData = await getEquipment();
-      const maintenData = await getMainten();
+      const maintenData = await getMaintenaint();
       setUsers(userData);
       setLaboratories(labData);
       setEquipment(equipData);
-      setMainten(equipData);
+      setMainten(maintenData);
     } catch (error) {
       console.error('Error en loadData:', error);
     }

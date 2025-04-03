@@ -5,13 +5,13 @@ import Layout from '../components/layout.js';
 import MantenimientoList from '../components/MantenimientoList'
 
 const MantenimientoScreen = () => {
-  const [mantenimiento, setMaintenaint] = useState ([]);
+  const [mantenimiento, setMantenimiento] = useState ([]);
 
   const loadMaintenaint = async () => {
     try {
       const data = await getMaintenaint();
-      setMaintenaint(data);
-    } catch (error){
+      setMantenimiento(data); // Changed from setMaintenaint to setMantenimiento
+    } catch (error) {
       console.error('Error en load Mantenimiento:', error);
     }
   };

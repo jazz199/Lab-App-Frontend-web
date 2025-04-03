@@ -39,7 +39,7 @@ export const getEquipment = async () => {
 
 export const getMaintenaint = async () => {
   try {
-    const response = await fetch(`${BASE_API}/mantenimiento`);
+    const response = await fetch(`${BASE_API}/mantenimientos`); // Changed from /mantenimiento to /mantenimientos
     const data = await response.json();
     return data;
   } catch (error) {
