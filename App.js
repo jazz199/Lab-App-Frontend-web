@@ -8,6 +8,9 @@ import UserFormScreen from "./screens/UserFormScreen";
 import LaboratoryScreen from "./screens/LaboratoryScreen";
 import EquipmentScreen from "./screens/EquipmentScreen";
 import MantenimientoScreen from "./screens/MantenimientoScreen";
+import PrestamosScreen from "./screens/PrestamosScreen"; // New
+import ReservasLaboratorioScreen from "./screens/ReservasLaboratorioScreen"; // New
+import CategoriaEquiposScreen from "./screens/CategoriaEquiposScreen"; // New
 
 const Stack = createStackNavigator();
 
@@ -27,6 +30,9 @@ const App = () => {
         <Stack.Screen name="Laboratorios" component={LaboratoryScreen} />
         <Stack.Screen name="Equipos" component={EquipmentScreen} />
         <Stack.Screen name="Mantenimiento" component={MantenimientoScreen} />
+        <Stack.Screen name="Prestamos" component={PrestamosScreen} />
+        <Stack.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} />
+        <Stack.Screen name="CategoriaEquipos" component={CategoriaEquiposScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

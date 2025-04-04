@@ -47,3 +47,36 @@ export const getMaintenaint = async () => {
     throw error;
   }
 };
+
+export const getLoans = async () => {
+  try {
+    const response = await fetch(`${BASE_API}/prestamos`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching loans:', error);
+    throw error;
+  }
+};
+
+export const getLabReservations = async () => {
+  try {
+    const response = await fetch(`${BASE_API}/reservas_laboratorios`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching lab reservations:', error);
+    throw error;
+  }
+};
+
+export const getEquipmentCategories = async () => {
+  try {
+    const response = await fetch(`${BASE_API}/categoria_equipos`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching equipment categories:', error);
+    throw error;
+  }
+};

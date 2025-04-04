@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { getUsers, getLaboratories, getEquipment, getMaintenaint } from '../api';
+import { getUsers, getLaboratories, getEquipment, getMaintenaint, getLoans, getLabReservations, getEquipmentCategories } from '../api';
 import Layout from '../components/layout';
 import UserList from '../components/UserList';
 import LaboratoryList from '../components/LaboratoryList';
@@ -12,6 +12,9 @@ const HomeScreen = () => {
   const [laboratories, setLaboratories] = useState([]);
   const [equipment, setEquipment] = useState([]);
   const [mantenimiento, setMainten] = useState([]);
+  const [prestamos, setPrestamos] = useState([]);
+  const [reservas, setReservas] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const navigation = useNavigation();
 
   const loadData = async () => {
@@ -20,10 +23,16 @@ const HomeScreen = () => {
       const labData = await getLaboratories();
       const equipData = await getEquipment();
       const maintenData = await getMaintenaint();
+      const loansData = await getLoans();
+      const reservasData = await getLabReservations();
+      const categoriasData = await getEquipmentCategories();
       setUsers(userData);
       setLaboratories(labData);
       setEquipment(equipData);
       setMainten(maintenData);
+      setPrestamos(loansData);
+      setReservas(reservasData);
+      setCategorias(categoriasData);
     } catch (error) {
       console.error('Error en loadData:', error);
     }
@@ -66,8 +75,35 @@ const HomeScreen = () => {
       >
         <Text style={styles.buttonText}>Gestionar Mantenimiento</Text>
       </TouchableOpacity>
+     {/* Préstamos */}
+     <TouchableOpacity 
+          style={styles.button} 
+          onPress={() => navigation.navigate('Prestamos')}
+        >
+          <Text style={styles.buttonText}>Gestionar Préstamos</Text>
+        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Préstamos</Text>
+        <PrestamosList prestamos={prestamos.slice(0, 3)} />
 
-      
+        {/* Reservas de Laboratorio */}
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={() => navigation.navigate('ReservasLaboratorio')}
+        >
+          <Text style={styles.buttonText}>Gestionar Reservas de Laboratorio</Text>
+        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Reservas de Laboratorio</Text>
+        <ReservasLaboratorioList reservas={reservas.slice(0, 3)} />
+
+        {/* Categoría de Equipos */}
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={() => navigation.navigate('CategoriaEquipos')}
+        >
+          <Text style={styles.buttonText}>Gestionar Categoría de Equipos</Text>
+        </TouchableOpacity>
+        <Text style={styles.sectionTitle}>Categorías de Equipos</Text>
+        <CategoriaEquiposList categorias={categorias.slice(0, 3)} />
     </Layout>
   );
 };
