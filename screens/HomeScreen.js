@@ -12,9 +12,9 @@ const HomeScreen = () => {
   const [laboratories, setLaboratories] = useState([]);
   const [equipment, setEquipment] = useState([]);
   const [mantenimiento, setMainten] = useState([]);
-  const [prestamos, setPrestamos] = useState([]);
-  const [reservas, setReservas] = useState([]);
-  const [categorias, setCategorias] = useState([]);
+  const [prestamo, setPrestamos] = useState([]);
+  const [reserva, setReservas] = useState([]);
+  const [categoria, setCategorias] = useState([]);
   const navigation = useNavigation();
 
   const loadData = async () => {
@@ -44,10 +44,9 @@ const HomeScreen = () => {
 
   return (
     <Layout>
-      {/* Título de bienvenida */}
+
       <Text style={styles.title}>Bienvenido</Text>
 
-      {/* Botones de navegación */}
       <TouchableOpacity 
         style={styles.button} 
         onPress={() => navigation.navigate('Usuarios')}
@@ -75,35 +74,31 @@ const HomeScreen = () => {
       >
         <Text style={styles.buttonText}>Gestionar Mantenimiento</Text>
       </TouchableOpacity>
-     {/* Préstamos */}
+  
      <TouchableOpacity 
           style={styles.button} 
           onPress={() => navigation.navigate('Prestamos')}
         >
           <Text style={styles.buttonText}>Gestionar Préstamos</Text>
         </TouchableOpacity>
-        <Text style={styles.sectionTitle}>Préstamos</Text>
-        <PrestamosList prestamos={prestamos.slice(0, 3)} />
-
-        {/* Reservas de Laboratorio */}
+       
+     
         <TouchableOpacity 
           style={styles.button} 
           onPress={() => navigation.navigate('ReservasLaboratorio')}
         >
           <Text style={styles.buttonText}>Gestionar Reservas de Laboratorio</Text>
         </TouchableOpacity>
-        <Text style={styles.sectionTitle}>Reservas de Laboratorio</Text>
-        <ReservasLaboratorioList reservas={reservas.slice(0, 3)} />
+        
 
-        {/* Categoría de Equipos */}
+       
         <TouchableOpacity 
           style={styles.button} 
           onPress={() => navigation.navigate('CategoriaEquipos')}
         >
           <Text style={styles.buttonText}>Gestionar Categoría de Equipos</Text>
         </TouchableOpacity>
-        <Text style={styles.sectionTitle}>Categorías de Equipos</Text>
-        <CategoriaEquiposList categorias={categorias.slice(0, 3)} />
+        
     </Layout>
   );
 };
