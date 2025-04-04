@@ -10,6 +10,10 @@
     npm install
 4. para ejecutar el proyecto ejecuta el siguiente comando en la carpeta raiz del proyecto
     npm start
+para jenerar la apk
+expo build:android
+# o
+expo build:ios
 ojo esto funciona solo con el bakent para instalarlo tedejo a quidebajo una guia
 
 //////////////////////////////
