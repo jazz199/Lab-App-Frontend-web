@@ -1,10 +1,11 @@
+// FILE: components/EquipmentList.js
 import React from 'react';
 import { View, FlatList } from 'react-native';
 import EquipmentItem from './EquipmentItem';
 
-const EquipmentList = ({ equipment }) => {
+const EquipmentList = ({ equipment, onDelete, onEdit }) => {
   const renderItem = ({ item }) => {
-    return <EquipmentItem equipment={item} />;
+    return <EquipmentItem equipment={item} onDelete={onDelete} onEdit={onEdit} />;
   };
 
   console.log('Equipos recibidos en EquipmentList:', equipment);

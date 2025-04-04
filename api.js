@@ -60,12 +60,57 @@ export const getLaboratories = async () => {
   try {
     const response = await fetch(`${BASE_API}/laboratorios`);
     const data = await response.json();
+    console.log('Datos de laboratorios recibidos:', data); // Depuración
     return data;
   } catch (error) {
     console.error('Error fetching laboratories:', error);
     throw error;
   }
 };
+
+export const createLaboratory = async (labData) => {
+  try {
+    const response = await fetch(`${BASE_API}/laboratorios`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(labData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error creating laboratory:", error);
+    throw error;
+  }
+};
+
+export const updateLaboratory = async (id, labData) => {
+  try {
+    const response = await fetch(`${BASE_API}/laboratorios/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(labData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating laboratory:", error);
+    throw error;
+  }
+};
+
+export const deleteLaboratory = async (id) => {
+  try {
+    const response = await fetch(`${BASE_API}/laboratorios/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting laboratory:", error);
+    throw error;
+  }
+};
+
 
 // Funciones para equipos
 export const getEquipment = async () => {
@@ -79,6 +124,48 @@ export const getEquipment = async () => {
   }
 };
 
+export const createEquipment = async (equipData) => {
+  try {
+    const response = await fetch(`${BASE_API}/equipos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(equipData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error creating equipment:", error);
+    throw error;
+  }
+};
+
+export const updateEquipment = async (id, equipData) => {
+  try {
+    const response = await fetch(`${BASE_API}/equipos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(equipData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating equipment:", error);
+    throw error;
+  }
+};
+
+export const deleteEquipment = async (id) => {
+  try {
+    const response = await fetch(`${BASE_API}/equipos/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting equipment:", error);
+    throw error;
+  }
+};
 
 export const getMaintenaint = async () => {
   try {
@@ -87,6 +174,47 @@ export const getMaintenaint = async () => {
     return data;
   } catch (error) {
     console.error('Error fetching Mantenimiento:', error);
+    throw error;
+  }
+};
+
+export const createMaintenance = async (maintData) => {
+  try {
+    const response = await fetch(`${BASE_API}/mantenimientos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(maintData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error creating maintenance:", error);
+    throw error;
+  }
+};
+export const updateMaintenance = async (id, maintData) => {
+  try {
+    const response = await fetch(`${BASE_API}/mantenimientos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(maintData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating maintenance:", error);
+    throw error;
+  }
+};
+export const deleteMaintenance = async (id) => {
+  try {
+    const response = await fetch(`${BASE_API}/mantenimientos/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting maintenance:", error);
     throw error;
   }
 };
@@ -102,6 +230,47 @@ export const getLoans = async () => {
   }
 };
 
+export const createLoan = async (loanData) => {
+  try {
+    const response = await fetch(`${BASE_API}/prestamos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loanData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error creating loan:", error);
+    throw error;
+  }
+};
+export const updateLoan = async (id, loanData) => {
+  try {
+    const response = await fetch(`${BASE_API}/prestamos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(loanData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating loan:", error);
+    throw error;
+  }
+};
+export const deleteLoan = async (id) => {
+  try {
+    const response = await fetch(`${BASE_API}/prestamos/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting loan:", error);
+    throw error;
+  }
+};
+
 export const getLabReservations = async () => {
   try {
     const response = await fetch(`${BASE_API}/reservas_laboratorios`);
@@ -113,6 +282,47 @@ export const getLabReservations = async () => {
   }
 };
 
+export const createLabReservation = async (resData) => {
+  try {
+    const response = await fetch(`${BASE_API}/reservas_laboratorios`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(resData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error creating lab reservation:", error);
+    throw error;
+  }
+};
+export const updateLabReservation = async (id, resData) => {
+  try {
+    const response = await fetch(`${BASE_API}/reservas_laboratorios/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(resData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating lab reservation:", error);
+    throw error;
+  }
+};
+export const deleteLabReservation = async (id) => {
+  try {
+    const response = await fetch(`${BASE_API}/reservas_laboratorios/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting lab reservation:", error);
+    throw error;
+  }
+};
+
 export const getEquipmentCategories = async () => {
   try {
     const response = await fetch(`${BASE_API}/categoria_equipos`);
@@ -120,6 +330,47 @@ export const getEquipmentCategories = async () => {
     return data;
   } catch (error) {
     console.error('Error fetching equipment categories:', error);
+    throw error;
+  }
+};
+
+export const createEquipmentCategory = async (catData) => {
+  try {
+    const response = await fetch(`${BASE_API}/categoria_equipos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(catData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error creating equipment category:", error);
+    throw error;
+  }
+};
+export const updateEquipmentCategory = async (id, catData) => {
+  try {
+    const response = await fetch(`${BASE_API}/categoria_equipos/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(catData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating equipment category:", error);
+    throw error;
+  }
+};
+export const deleteEquipmentCategory = async (id) => {
+  try {
+    const response = await fetch(`${BASE_API}/categoria_equipos/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting equipment category:", error);
     throw error;
   }
 };
