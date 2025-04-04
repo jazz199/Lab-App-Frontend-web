@@ -12,6 +12,49 @@ export const getUsers = async () => {
   }
 };
 
+export const createUser = async (userData) => {
+  try {
+    const response = await fetch(`${BASE_API}/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    throw error;
+  }
+};
+
+export const updateUser = async (id, userData) => {
+  try {
+    const response = await fetch(`${BASE_API}/users/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(userData),
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
+
+export const deleteUser = async (id) => {
+  try {
+    const response = await fetch(`${BASE_API}/users/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    throw error;
+  }
+};
+
 // Funciones para laboratorios
 export const getLaboratories = async () => {
   try {
