@@ -26,13 +26,41 @@ const App = () => {
             headerTitleStyle: { color: '#ffffff' }
           }}
         />
-        <Stack.Screen name="Usuarios" component={UserFormScreen} />
-        <Stack.Screen name="Laboratorios" component={LaboratoryScreen} />
-        <Stack.Screen name="Equipos" component={EquipmentScreen} />
-        <Stack.Screen name="Mantenimiento" component={MantenimientoScreen} />
-        <Stack.Screen name="Prestamos" component={PrestamosScreen} />
-        <Stack.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} />
-        <Stack.Screen name="CategoriaEquipos" component={CategoriaEquiposScreen} />
+        <Stack.Screen name="Usuarios" component={UserFormScreen}
+        options={{
+          headerStyle: { backgroundColor: "#222f3e" },
+          headerTitleStyle: { color: '#ffffff' }
+        }} />
+        <Stack.Screen name="Laboratorios" component={LaboratoryScreen}
+        options={{
+          headerStyle: { backgroundColor: "#222f3e" },
+          headerTitleStyle: { color: '#ffffff' }
+        }} />
+        <Stack.Screen name="Equipos" component={EquipmentScreen}
+        options={{
+          headerStyle: { backgroundColor: "#222f3e" },
+          headerTitleStyle: { color: '#ffffff' }
+        }} />
+        <Stack.Screen name="Mantenimiento" component={MantenimientoScreen}
+        options={{
+          headerStyle: { backgroundColor: "#222f3e" },
+          headerTitleStyle: { color: '#ffffff' }
+        }} />
+        <Stack.Screen name="Prestamos" component={PrestamosScreen}
+        options={{
+          headerStyle: { backgroundColor: "#222f3e" },
+          headerTitleStyle: { color: '#ffffff' }
+        }} />
+        <Stack.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} 
+        options={{
+          headerStyle: { backgroundColor: "#222f3e" },
+          headerTitleStyle: { color: '#ffffff' }
+        }}/>
+        <Stack.Screen name="CategoriaEquipos" component={CategoriaEquiposScreen}
+        options={{
+          headerStyle: { backgroundColor: "#222f3e" },
+          headerTitleStyle: { color: '#ffffff' }
+        }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
