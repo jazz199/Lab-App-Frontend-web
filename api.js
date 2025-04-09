@@ -1,4 +1,4 @@
-const BASE_API = 'http://192.168.1.3:3000';
+const BASE_API = 'http://192.168.1.2:3000';
 
 // Funciones para usuarios
 export const getUsers = async () => {
@@ -372,5 +372,37 @@ export const deleteEquipmentCategory = async (id) => {
   } catch (error) {
     console.error("Error deleting equipment category:", error);
     throw error;
+  }
+};
+
+// ... Código existente ...
+
+export const registerUser = async (userData) => {
+  try {
+      const response = await fetch(`${BASE_API}/users/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
+      });
+      const data = await response.json();
+      return data;
+  } catch (error) {
+      console.error("Error registering user:", error);
+      throw error;
+  }
+};
+
+export const loginUser = async (credentials) => {
+  try {
+      const response = await fetch(`${BASE_API}/users/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials),
+      });
+      const data = await response.json();
+      return data;
+  } catch (error) {
+      console.error("Error logging in:", error);
+      throw error;
   }
 };
