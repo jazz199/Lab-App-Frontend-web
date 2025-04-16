@@ -1,3 +1,4 @@
+// FILE: App.js
 import React, { useState } from "react";
 import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
@@ -21,7 +22,7 @@ const App = () => {
 
     const handleLogin = (loggedUser, goToRegister = false) => {
         if (loggedUser) {
-            console.log('Usuario logueado:', loggedUser); // Depuración
+            console.log('Usuario logueado:', loggedUser);
             setUser(loggedUser);
         }
         if (goToRegister) setShowRegister(true);
@@ -36,22 +37,18 @@ const App = () => {
 
     const roleScreens = {
         estudiante: [
-            <Tab.Screen key="Home" name="Home" component={HomeScreen} options={{ title: "Inicio" }} />,
-            <Tab.Screen key="Prestamos" name="Prestamos" component={PrestamosScreen} options={{ title: "Préstamos" }} />,
-            <Tab.Screen key="ReservasLaboratorio" name="ReservasLaboratorio" component={ReservasLaboratorioScreen} options={{ title: "Reservas Lab" }} />,
+            <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
         ],
         profesor: [
-            <Tab.Screen key="Home" name="Home" component={HomeScreen} options={{ title: "Inicio" }} />,
-            <Tab.Screen key="Prestamos" name="Prestamos" component={PrestamosScreen} options={{ title: "Préstamos" }} />,
-            <Tab.Screen key="ReservasLaboratorio" name="ReservasLaboratorio" component={ReservasLaboratorioScreen} options={{ title: "Reservas Lab" }} />,
+            <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
         ],
         personal: [
-            <Tab.Screen key="Home" name="Home" component={HomeScreen} options={{ title: "Inicio" }} />,
+            <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
             <Tab.Screen key="Equipos" name="Equipos" component={EquipmentScreen} />,
             <Tab.Screen key="Mantenimiento" name="Mantenimiento" component={MantenimientoScreen} />,
         ],
         admin: [
-            <Tab.Screen key="Home" name="Home" component={HomeScreen} options={{ title: "Inicio" }} />,
+            <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
             <Tab.Screen key="Usuarios" name="Usuarios" component={UserFormScreen} />,
             <Tab.Screen key="Laboratorios" name="Laboratorios" component={LaboratoryScreen} />,
             <Tab.Screen key="Equipos" name="Equipos" component={EquipmentScreen} />,
