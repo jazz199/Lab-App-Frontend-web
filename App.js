@@ -42,7 +42,7 @@ const App = () => {
         drawerPosition: 'left',
         drawerStyle: { backgroundColor: '#222f3e', width: 250 },
         drawerLabelStyle: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
-        headerStyle: { backgroundColor: '#1e90ff' },
+        headerStyle: { backgroundColor: '#222f3e' },
         headerTintColor: '#ffffff',
         headerTitleStyle: { fontWeight: 'bold' },
       }}
@@ -169,7 +169,7 @@ const App = () => {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#1e90ff' },
   container: { flex: 1 },
-  header: { backgroundColor: '#1e90ff', padding: 15, alignItems: 'flex-start' },
+  header: { backgroundColor: '#222f3e', padding: 15, alignItems: 'flex-start' },
   headerTitle: { color: '#ffffff', fontSize: 20, fontWeight: 'bold' },
   tabContainer: { flex: 1 },
   errorText: { color: '#ffffff', fontSize: 18, textAlign: 'center', marginTop: 20 },
