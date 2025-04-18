@@ -1,20 +1,19 @@
-// FILE: screens/HomeScreen.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
 import Layout from '../components/layout';
 import { getLaboratories, createLabReservation, updateLabReservation, updateLaboratory, getLabReservations } from '../api';
 
 const HomeScreen = ({ route }) => {
-  const user = route.params?.user || { tipo_usuario: 'estudiante', usuario_id: null }; // Obtenemos el usuario desde params
+  const user = route.params?.user || { tipo_usuario: 'estudiante', usuario_id: null };
   const [laboratories, setLaboratories] = useState([]);
-  const [requests, setRequests] = useState([]); // Solicitudes pendientes para el admin
+  const [requests, setRequests] = useState([]);
 
   const loadLaboratories = async () => {
     try {
       const data = await getLaboratories();
       const updatedLabs = data.map(lab => ({
         ...lab,
-        ocupado: !!lab.responsable_id, // Consideramos ocupado si tiene responsable
+        ocupado: !!lab.responsable_id,
       }));
       setLaboratories(updatedLabs);
     } catch (error) {
@@ -128,15 +127,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   list: {
     width: '100%',
   },
   labItem: {
-    backgroundColor: '#333333',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     padding: 15,
     marginVertical: 8,
-    borderRadius: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   labTitle: {
     color: '#ffffff',
@@ -144,30 +148,32 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   labText: {
-    color: '#ffffff',
+    color: '#e0e0e0',
     fontSize: 14,
   },
   requestButton: {
     backgroundColor: '#1e90ff',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 8,
     marginTop: 10,
     alignItems: 'center',
   },
   requestItem: {
-    backgroundColor: '#444444',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     padding: 15,
     marginVertical: 8,
-    borderRadius: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   requestText: {
-    color: '#ffffff',
+    color: '#e0e0e0',
     fontSize: 14,
   },
   approveButton: {
     backgroundColor: '#28a745',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 8,
     marginTop: 10,
     alignItems: 'center',
   },
