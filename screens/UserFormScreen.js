@@ -152,60 +152,15 @@ const UserFormScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    marginBottom: 10,
-  },
-  title: {
-    color: '#ffffff',
-    fontSize: 20,
-  },
-  newButton: {
-    backgroundColor: '#1e90ff',
-    padding: 10,
-    borderRadius: 5,
-  },
-  input: {
-    backgroundColor: '#333',
-    color: '#fff',
-    padding: 10,
-    marginVertical: 5,
-    borderRadius: 5,
-    width: '80%',
-  },
-  pickerContainer: {
-    backgroundColor: '#333',
-    borderRadius: 5,
-    marginVertical: 5,
-    width: '80%',
-  },
-  picker: {
-    color: '#fff',
-  },
-  submitButton: {
-    backgroundColor: '#1e90ff',
-    padding: 15,
-    borderRadius: 8,
-    marginTop: 10,
-    width: '80%',
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#ff4444',
-    padding: 15,
-    borderRadius: 8,
-    marginTop: 10,
-    width: '80%',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  header: {flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 10},
+  title: {color: '#ffffff',fontSize: 20},
+  newButton: {backgroundColor: '#1e90ff', padding: 10,borderRadius: 5},
+  input: {backgroundColor: '#333', color: '#fff', padding: 10, marginVertical: 5, borderRadius: 5, width: '80%'},
+  pickerContainer: {backgroundColor: '#333', borderRadius: 5, marginVertical: 5, width: '80%'},
+  picker: {color: '#fff'},
+  submitButton: {backgroundColor: '#1e90ff', padding: 15,borderRadius: 8, marginTop: 10, width: '80%', alignItems: 'center'},
+  cancelButton: {backgroundColor: '#ff4444', padding: 15, borderRadius: 8, marginTop: 10, width: '80%', alignItems: 'center'},
+  buttonText: {color: '#ffffff', fontSize: 16, fontWeight: 'bold'},
 });
 
 export default UserFormScreen;

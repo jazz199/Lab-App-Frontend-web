@@ -1,4 +1,4 @@
-const BASE_API = 'http://192.168.1.7:3000';
+const BASE_API = 'http://192.168.1.4:3000';
 
 // Funciones para usuarios
 export const getUsers = async () => {
