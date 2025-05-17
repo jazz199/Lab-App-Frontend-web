@@ -1,4 +1,4 @@
-const BASE_API = 'http://192.168.1.4:3000';
+const BASE_API = 'https://app-usb-bakent-production-598e.up.railway.app';
 
 // Funciones para usuarios
 export const getUsers = async () => {

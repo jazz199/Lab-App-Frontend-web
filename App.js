@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
-import { createDrawerNavigator } from "@react-navigation/drawer";
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import LoginScreen from "./screens/LoginScreen";
 import RegisterScreen from "./screens/RegisterScreen";
@@ -17,13 +17,29 @@ import CategoriaEquiposScreen from "./screens/CategoriaEquiposScreen";
 const Drawer = createDrawerNavigator();
 const Tab = createMaterialTopTabNavigator();
 
+const CustomDrawerContent = (props) => {
+  const { onLogout } = props;
+  return (
+    <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1, justifyContent: 'space-between' }}>
+      <View>
+        <DrawerItemList {...props} />
+      </View>
+      <TouchableOpacity
+        style={{ padding: 16, backgroundColor: '#ff4444', margin: 16, borderRadius: 8 }}
+        onPress={onLogout}
+      >
+        <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Cerrar sesión</Text>
+      </TouchableOpacity>
+    </DrawerContentScrollView>
+  );
+};
+
 const App = () => {
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
 
   const handleLogin = (loggedUser, goToRegister = false) => {
     if (loggedUser) {
-      console.log('Usuario logueado:', loggedUser);
       setUser(loggedUser);
     }
     if (goToRegister) setShowRegister(true);
@@ -32,12 +48,15 @@ const App = () => {
 
   const handleRegister = () => setShowRegister(false);
 
+  const handleLogout = () => setUser(null);
+
   if (!user) {
     return showRegister ? <RegisterScreen onRegister={handleRegister} /> : <LoginScreen onLogin={handleLogin} />;
   }
 
   const AdminDrawer = () => (
     <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} onLogout={handleLogout} />}
       screenOptions={{
         drawerPosition: 'left',
         drawerStyle: { backgroundColor: '#222f3e', width: 250 },
@@ -47,77 +66,26 @@ const App = () => {
         headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      <Drawer.Screen
-        name="Home"
-        component={HomeScreen}
-        initialParams={{ user }}
-        options={{ title: "Inicio" }}
-      />
-      <Drawer.Screen
-        name="Usuarios"
-        component={UserFormScreen}
-        options={{ title: "Usuarios" }}
-      />
-      <Drawer.Screen
-        name="Laboratorios"
-        component={LaboratoryScreen}
-        options={{ title: "Laboratorios" }}
-      />
-      <Drawer.Screen
-        name="Equipos"
-        component={EquipmentScreen}
-        options={{ title: "Equipos" }}
-      />
-      <Drawer.Screen
-        name="Mantenimiento"
-        component={MantenimientoScreen}
-        options={{ title: "Mantenimiento" }}
-      />
-      <Drawer.Screen
-        name="Prestamos"
-        component={PrestamosScreen}
-        options={{ title: "Préstamos" }}
-      />
-      <Drawer.Screen
-        name="ReservasLaboratorio"
-        component={ReservasLaboratorioScreen}
-        options={{ title: "Reservas Lab" }}
-      />
-      <Drawer.Screen
-        name="CategoriaEquipos"
-        component={CategoriaEquiposScreen}
-        options={{ title: "Categorías" }}
-      />
+      <Drawer.Screen name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
+      <Drawer.Screen name="Usuarios" component={UserFormScreen} options={{ title: "Usuarios" }} />
+      <Drawer.Screen name="Laboratorios" component={LaboratoryScreen} options={{ title: "Laboratorios" }} />
+      <Drawer.Screen name="Equipos" component={EquipmentScreen} options={{ title: "Equipos" }} />
+      <Drawer.Screen name="Mantenimiento" component={MantenimientoScreen} options={{ title: "Mantenimiento" }} />
+      <Drawer.Screen name="Prestamos" component={PrestamosScreen} options={{ title: "Préstamos" }} />
+      <Drawer.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} options={{ title: "Reservas Lab" }} />
+      <Drawer.Screen name="CategoriaEquipos" component={CategoriaEquiposScreen} options={{ title: "Categorías" }} />
     </Drawer.Navigator>
   );
 
   const roleScreens = {
     estudiante: [
-      <Tab.Screen
-        key="Home"
-        name="Home"
-        component={HomeScreen}
-        initialParams={{ user }}
-        options={{ title: "Inicio" }}
-      />,
+      <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
     ],
     profesor: [
-      <Tab.Screen
-        key="Home"
-        name="Home"
-        component={HomeScreen}
-        initialParams={{ user }}
-        options={{ title: "Inicio" }}
-      />,
+      <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
     ],
     personal: [
-      <Tab.Screen
-        key="Home"
-        name="Home"
-        component={HomeScreen}
-        initialParams={{ user }}
-        options={{ title: "Inicio" }}
-      />,
+      <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
       <Tab.Screen key="Equipos" name="Equipos" component={EquipmentScreen} />,
       <Tab.Screen key="Mantenimiento" name="Mantenimiento" component={MantenimientoScreen} />,
     ],
@@ -148,11 +116,11 @@ const App = () => {
               <AdminDrawer />
             ) : (
               <Tab.Navigator
+                tabBarPosition="bottom"
                 screenOptions={{
                   tabBarStyle: { backgroundColor: '#222f3e' },
                   tabBarLabelStyle: { color: '#ffffff', fontSize: 12, fontWeight: 'bold' },
                   tabBarIndicatorStyle: { backgroundColor: '#1e90ff' },
-                  tabBarPosition: 'bottom',
                   tabBarScrollEnabled: true,
                 }}
               >
