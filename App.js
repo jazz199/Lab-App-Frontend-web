@@ -13,6 +13,7 @@ import MantenimientoScreen from "./screens/MantenimientoScreen";
 import PrestamosScreen from "./screens/PrestamosScreen";
 import ReservasLaboratorioScreen from "./screens/ReservasLaboratorioScreen";
 import CategoriaEquiposScreen from "./screens/CategoriaEquiposScreen";
+import UserLabReportScreen from "./screens/UserLabReportScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -74,20 +75,35 @@ const App = () => {
       <Drawer.Screen name="Prestamos" component={PrestamosScreen} options={{ title: "Préstamos" }} />
       <Drawer.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} options={{ title: "Reservas Lab" }} />
       <Drawer.Screen name="CategoriaEquipos" component={CategoriaEquiposScreen} options={{ title: "Categorías" }} />
+      <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
+    </Drawer.Navigator>
+  );
+
+  const UserDrawer = () => (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} onLogout={handleLogout} />}
+      screenOptions={{
+        drawerPosition: 'left',
+        drawerStyle: { backgroundColor: '#222f3e', width: 250 },
+        drawerLabelStyle: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
+        headerStyle: { backgroundColor: '#222f3e' },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: { fontWeight: 'bold' },
+      }}
+    >
+      <Drawer.Screen name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
+      <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
     </Drawer.Navigator>
   );
 
   const roleScreens = {
-    estudiante: [
-      <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
-    ],
-    profesor: [
-      <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
-    ],
+    estudiante: [<Drawer.Screen key="UserDrawer" name="UserDrawer" component={UserDrawer} options={{ title: "Menu" }} />],
+    profesor: [<Drawer.Screen key="UserDrawer" name="UserDrawer" component={UserDrawer} options={{ title: "Menu" }} />],
     personal: [
       <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
       <Tab.Screen key="Equipos" name="Equipos" component={EquipmentScreen} />,
       <Tab.Screen key="Mantenimiento" name="Mantenimiento" component={MantenimientoScreen} />,
+      <Tab.Screen key="ReporteLaboratorios" name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />,
     ],
     admin: [<Drawer.Screen key="AdminDrawer" name="AdminDrawer" component={AdminDrawer} options={{ title: "Menu" }} />],
   };
@@ -112,8 +128,8 @@ const App = () => {
             <Text style={styles.headerTitle}>Lab-App</Text>
           </View>
           <View style={styles.tabContainer}>
-            {user.tipo_usuario === 'admin' ? (
-              <AdminDrawer />
+            {['admin', 'estudiante', 'profesor'].includes(user.tipo_usuario) ? (
+              user.tipo_usuario === 'admin' ? <AdminDrawer /> : <UserDrawer />
             ) : (
               <Tab.Navigator
                 tabBarPosition="bottom"

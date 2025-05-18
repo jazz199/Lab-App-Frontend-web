@@ -1,4 +1,4 @@
-const BASE_API = 'https://app-usb-bakent-production-598e.up.railway.app';
+const BASE_API = 'http://192.168.1.8:3000'; //https://app-usb-bakent-production-598e.up.railway.app
 
 // Funciones para usuarios
 export const getUsers = async () => {
@@ -11,6 +11,8 @@ export const getUsers = async () => {
     throw error;
   }
 };
+
+
 
 export const createUser = async (userData) => {
   try {
@@ -51,6 +53,18 @@ export const deleteUser = async (id) => {
     return data;
   } catch (error) {
     console.error("Error deleting user:", error);
+    throw error;
+  }
+};
+
+// Nueva función para obtener el reporte de laboratorios del usuario
+export const getUserLabReport = async (userId) => {
+  try {
+    const response = await fetch(`${BASE_API}/users/${userId}/lab-report`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching user lab report:', error);
     throw error;
   }
 };
@@ -111,7 +125,6 @@ export const deleteLaboratory = async (id) => {
   }
 };
 
-
 // Funciones para equipos
 export const getEquipment = async () => {
   try {
@@ -169,7 +182,7 @@ export const deleteEquipment = async (id) => {
 
 export const getMaintenaint = async () => {
   try {
-    const response = await fetch(`${BASE_API}/mantenimientos`); // Changed from /mantenimiento to /mantenimientos
+    const response = await fetch(`${BASE_API}/mantenimientos`);
     const data = await response.json();
     return data;
   } catch (error) {
@@ -192,6 +205,7 @@ export const createMaintenance = async (maintData) => {
     throw error;
   }
 };
+
 export const updateMaintenance = async (id, maintData) => {
   try {
     const response = await fetch(`${BASE_API}/mantenimientos/${id}`, {
@@ -206,6 +220,7 @@ export const updateMaintenance = async (id, maintData) => {
     throw error;
   }
 };
+
 export const deleteMaintenance = async (id) => {
   try {
     const response = await fetch(`${BASE_API}/mantenimientos/${id}`, {
@@ -244,6 +259,7 @@ export const createLoan = async (loanData) => {
     throw error;
   }
 };
+
 export const updateLoan = async (id, loanData) => {
   try {
     const response = await fetch(`${BASE_API}/prestamos/${id}`, {
@@ -258,6 +274,7 @@ export const updateLoan = async (id, loanData) => {
     throw error;
   }
 };
+
 export const deleteLoan = async (id) => {
   try {
     const response = await fetch(`${BASE_API}/prestamos/${id}`, {
@@ -296,6 +313,7 @@ export const createLabReservation = async (resData) => {
     throw error;
   }
 };
+
 export const updateLabReservation = async (id, resData) => {
   try {
     const response = await fetch(`${BASE_API}/reservas_laboratorios/${id}`, {
@@ -310,6 +328,7 @@ export const updateLabReservation = async (id, resData) => {
     throw error;
   }
 };
+
 export const deleteLabReservation = async (id) => {
   try {
     const response = await fetch(`${BASE_API}/reservas_laboratorios/${id}`, {
@@ -348,6 +367,7 @@ export const createEquipmentCategory = async (catData) => {
     throw error;
   }
 };
+
 export const updateEquipmentCategory = async (id, catData) => {
   try {
     const response = await fetch(`${BASE_API}/categoria_equipos/${id}`, {
@@ -362,6 +382,7 @@ export const updateEquipmentCategory = async (id, catData) => {
     throw error;
   }
 };
+
 export const deleteEquipmentCategory = async (id) => {
   try {
     const response = await fetch(`${BASE_API}/categoria_equipos/${id}`, {
@@ -374,8 +395,6 @@ export const deleteEquipmentCategory = async (id) => {
     throw error;
   }
 };
-
-// ... Código existente ...
 
 export const registerUser = async (userData) => {
   try {
@@ -406,4 +425,3 @@ export const loginUser = async (credentials) => {
       throw error;
   }
 };
-
