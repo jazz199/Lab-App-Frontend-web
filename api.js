@@ -1,4 +1,6 @@
-const BASE_API = 'http://192.168.1.8:3000'; //https://app-usb-bakent-production-598e.up.railway.app
+const BASE_API = 'http://192.168.57.110:3000'; //https://app-usb-bakent-production-2430.up.railway.app
+//http://192.168.1.8:3000
+//mysql://root:ZtHgmGZOXydxvuHFTfVuWkhTzlRqOKLG@caboose.proxy.rlwy.net:10312/railway
 
 // Funciones para usuarios
 export const getUsers = async () => {
