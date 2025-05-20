@@ -1,6 +1,7 @@
-const BASE_API = 'http://192.168.57.110:3000'; //https://app-usb-bakent-production-2430.up.railway.app
+const BASE_API = 'http://192.168.1.3:3000'; //https://app-usb-bakent-production-2430.up.railway.app
 //http://192.168.1.8:3000
 //mysql://root:ZtHgmGZOXydxvuHFTfVuWkhTzlRqOKLG@caboose.proxy.rlwy.net:10312/railway
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Funciones para usuarios
 export const getUsers = async () => {
@@ -59,18 +60,48 @@ export const deleteUser = async (id) => {
   }
 };
 
-// Nueva función para obtener el reporte de laboratorios del usuario
-export const getUserLabReport = async (userId) => {
+export const getUserLoanReport = async (userId) => {
   try {
-    const response = await fetch(`${BASE_API}/users/${userId}/lab-report`);
+    const response = await fetch(`${BASE_API}/users/${userId}/loan-report`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error en la solicitud');
+    }
+
     const data = await response.json();
+    console.log('Datos del reporte:', data);
     return data;
   } catch (error) {
-    console.error('Error fetching user lab report:', error);
+    console.error('Error fetching user loan report:', error);
     throw error;
   }
 };
 
+// Nueva función para obtener el reporte de laboratorios del usuario
+export const getUserLabReservas = async (userId) => {
+  try {
+    const response = await fetch(`${BASE_API}/users/${userId}/lab-reservas`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error en la solicitud');
+    }
+    const data = await response.json();
+    console.log('Datos del reporte de reservas y préstamos:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching lab reservas and loans report:', error);
+    throw error;
+  }
+};
 // Funciones para laboratorios
 export const getLaboratories = async () => {
   try {
