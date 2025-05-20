@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Alert, Dimensions, FlatList, TouchableOpacity, Modal, ScrollView } from 'react-native';
-import { getUserLabReservas } from '../api'; // Ajusta la importación
+import { useIsFocused } from '@react-navigation/native';
+import { getUserLabReservas } from '../api';
 import Layout from '../components/layout';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 
@@ -16,6 +17,7 @@ const Card = ({ title, subtitle, date, color, onPress }) => (
 
 const UserLabReservasScreen = ({ route }) => {
   const user = route.params?.user || { id: null };
+  const isFocused = useIsFocused();
   const [report, setReport] = useState({
     reservas_aprobadas: [],
     reservas_pendientes: [],
@@ -37,10 +39,11 @@ const UserLabReservasScreen = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [showCharts, setShowCharts] = useState(false);
 
   const screenWidth = Dimensions.get('window').width - 32;
 
-  // Gráficos para reservas
   const reservaBarData = {
     labels: ['Total', 'Aprobadas', 'Pendientes', 'Canceladas'],
     datasets: [
@@ -62,7 +65,6 @@ const UserLabReservasScreen = ({ route }) => {
     { name: 'Canceladas', count: report.total_canceladas, color: '#ff4444', legendFontColor: '#fff', legendFontSize: 14 }
   ];
 
-  // Gráficos para préstamos
   const prestamoBarData = {
     labels: ['Total', 'Pendientes', 'Atrasados', 'Devueltos'],
     datasets: [
@@ -84,7 +86,7 @@ const UserLabReservasScreen = ({ route }) => {
     { name: 'Devueltos', count: report.total_devueltos, color: '#FFD700', legendFontColor: '#fff', legendFontSize: 14 }
   ];
 
-  const loadReport = async () => {
+  const loadReport = useCallback(async () => {
     if (!user.id) {
       Alert.alert('Error', 'ID de usuario no disponible');
       setLoading(false);
@@ -92,7 +94,7 @@ const UserLabReservasScreen = ({ route }) => {
     }
     try {
       const data = await getUserLabReservas(user.id);
-      setReport({
+      const newReport = {
         reservas_aprobadas: data?.reservas_aprobadas || [],
         reservas_pendientes: data?.reservas_pendientes || [],
         reservas_canceladas: data?.reservas_canceladas || [],
@@ -107,23 +109,29 @@ const UserLabReservasScreen = ({ route }) => {
         todos_prestamos: data?.todos_prestamos || [],
         total_prestamos: data?.total_prestamos || 0,
         total_pendientes_prestamos: data?.total_pendientes_prestamos || 0,
-        total_atrasados: data?.stage_atrasados || 0,
+        total_atrasados: data?.total_atrasados || 0,
         total_devueltos: data?.total_devueltos || 0
-      });
+      };
+
+      if (JSON.stringify(newReport) !== JSON.stringify(report)) {
+        setReport(newReport);
+      }
+      setLastUpdated(new Date());
     } catch (error) {
+      console.error('Error fetching report:', error);
       Alert.alert('Error', 'No se pudo cargar el reporte: ' + error.message);
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.id, report]);
 
   useEffect(() => {
-    if (user.id) {
-      loadReport();
-    } else {
-      setLoading(false);
+    loadReport();
+    if (isFocused) {
+      const intervalId = setInterval(loadReport, 10000);
+      return () => clearInterval(intervalId);
     }
-  }, [user.id]);
+  }, [isFocused, loadReport]);
 
   if (loading) {
     return (
@@ -167,87 +175,99 @@ const UserLabReservasScreen = ({ route }) => {
     </View>
   );
 
-  const RenderHeader = () => (
-    <View style={{ alignItems: 'center' }}>
-      <Text style={styles.title}>Reporte de Reservas y Préstamos - Usuario {user.id || 'Desconocido'}</Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginBottom: 20 }}>
-        <Text style={styles.subtitle}>Reservas Total: {report.total_reservas}  </Text>
-        <Text style={styles.subtitle}>Aprobadas: {report.total_aprobadas}  </Text>
-        <Text style={styles.subtitle}>Pendientes: {report.total_pendientes_reservas}  </Text>
-        <Text style={styles.subtitle}>Canceladas: {report.total_canceladas}  </Text>
-        <Text style={styles.subtitle}>Préstamos Total: {report.total_prestamos}  </Text>
-        <Text style={styles.subtitle}>Pendientes: {report.total_pendientes_prestamos}  </Text>
-        <Text style={styles.subtitle}>Atrasados: {report.total_atrasados}  </Text>
-        <Text style={styles.subtitle}>Devueltos: {report.total_devueltos}</Text>
+  const renderChartsModal = () => (
+    <Modal
+      visible={showCharts}
+      animationType="slide"
+      onRequestClose={() => setShowCharts(false)}
+    >
+      <View style={{ flex: 1, backgroundColor: '#232946' }}>
+        <ScrollView contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
+          <Text style={styles.title}>Gráficos Estadísticos</Text>
+          <Text style={styles.sectionTitle}>Estadísticas de Reservas (Barras)</Text>
+          <BarChart
+            data={reservaBarData}
+            width={screenWidth}
+            height={220}
+            yAxisLabel=""
+            chartConfig={{
+              backgroundColor: '#222f3e',
+              backgroundGradientFrom: '#222f3e',
+              backgroundGradientTo: '#1e90ff',
+              decimalPlaces: 0,
+              color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
+              labelColor: () => '#fff',
+              style: { borderRadius: 16 },
+              propsForBackgroundLines: { stroke: '#444' }
+            }}
+            style={{ marginVertical: 8, borderRadius: 16 }}
+          />
+          <Text style={styles.sectionTitle}>Distribución de Reservas (Torta)</Text>
+          <PieChart
+            data={reservaPieData}
+            width={screenWidth}
+            height={180}
+            chartConfig={{
+              color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
+              labelColor: () => '#fff',
+            }}
+            accessor="count"
+            backgroundColor="transparent"
+            paddingLeft="15"
+            absolute
+          />
+          <Text style={styles.sectionTitle}>Estadísticas de Préstamos (Barras)</Text>
+          <BarChart
+            data={prestamoBarData}
+            width={screenWidth}
+            height={220}
+            yAxisLabel=""
+            chartConfig={{
+              backgroundColor: '#222f3e',
+              backgroundGradientFrom: '#222f3e',
+              backgroundGradientTo: '#ff8c00',
+              decimalPlaces: 0,
+              color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
+              labelColor: () => '#fff',
+              style: { borderRadius: 16 },
+              propsForBackgroundLines: { stroke: '#444' }
+            }}
+            style={{ marginVertical: 8, borderRadius: 16 }}
+          />
+          <Text style={styles.sectionTitle}>Distribución de Préstamos (Torta)</Text>
+          <PieChart
+            data={prestamoPieData}
+            width={screenWidth}
+            height={180}
+            chartConfig={{
+              color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
+              labelColor: () => '#fff',
+            }}
+            accessor="count"
+            backgroundColor="transparent"
+            paddingLeft="15"
+            absolute
+          />
+          <TouchableOpacity style={styles.closeButton} onPress={() => setShowCharts(false)}>
+            <Text style={styles.closeButtonText}>Cerrar</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
+    </Modal>
+  );
 
-      <Text style={styles.sectionTitle}>Estadísticas de Reservas (Barras)</Text>
-      <BarChart
-        data={reservaBarData}
-        width={screenWidth}
-        height={220}
-        yAxisLabel=""
-        chartConfig={{
-          backgroundColor: '#222f3e',
-          backgroundGradientFrom: '#222f3e',
-          backgroundGradientTo: '#1e90ff',
-          decimalPlaces: 0,
-          color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
-          labelColor: () => '#fff',
-          style: { borderRadius: 16 },
-          propsForBackgroundLines: { stroke: '#444' }
-        }}
-        style={{ marginVertical: 8, borderRadius: 16 }}
-      />
-
-      <Text style={styles.sectionTitle}>Distribución de Reservas (Torta)</Text>
-      <PieChart
-        data={reservaPieData}
-        width={screenWidth}
-        height={180}
-        chartConfig={{
-          color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
-          labelColor: () => '#fff',
-        }}
-        accessor="count"
-        backgroundColor="transparent"
-        paddingLeft="15"
-        absolute
-      />
-
-      <Text style={styles.sectionTitle}>Estadísticas de Préstamos (Barras)</Text>
-      <BarChart
-        data={prestamoBarData}
-        width={screenWidth}
-        height={220}
-        yAxisLabel=""
-        chartConfig={{
-          backgroundColor: '#222f3e',
-          backgroundGradientFrom: '#222f3e',
-          backgroundGradientTo: '#ff8c00',
-          decimalPlaces: 0,
-          color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
-          labelColor: () => '#fff',
-          style: { borderRadius: 16 },
-          propsForBackgroundLines: { stroke: '#444' }
-        }}
-        style={{ marginVertical: 8, borderRadius: 16 }}
-      />
-
-      <Text style={styles.sectionTitle}>Distribución de Préstamos (Torta)</Text>
-      <PieChart
-        data={prestamoPieData}
-        width={screenWidth}
-        height={180}
-        chartConfig={{
-          color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
-          labelColor: () => '#fff',
-        }}
-        accessor="count"
-        backgroundColor="transparent"
-        paddingLeft="15"
-        absolute
-      />
+  const RenderHeader = () => (
+    <View style={{ alignItems: 'left', paddingVertical: 10 }}>
+      <Text style={styles.title}>Reporte {user.id || 'Desconocido'}</Text>
+      <Text style={styles.lastUpdated}>
+        Última actualización: {lastUpdated ? lastUpdated.toLocaleTimeString('es-ES') : 'Cargando...'}
+      </Text>
+      <TouchableOpacity style={styles.showChartsButton} onPress={() => setShowCharts(true)}>
+        <Text style={styles.showChartsButtonText}>Gráficos</Text>
+      </TouchableOpacity>
+      <View style={styles.statsRow}>
+        <Text style={styles.subtitle}>Total: {report.total_reservas}</Text>
+      </View>
     </View>
   );
 
@@ -324,6 +344,7 @@ const UserLabReservasScreen = ({ route }) => {
         )}
       />
       {renderItemModal()}
+      {renderChartsModal()}
     </Layout>
   );
 };
@@ -331,15 +352,28 @@ const UserLabReservasScreen = ({ route }) => {
 const styles = StyleSheet.create({
   title: {
     color: '#ffffff',
-    fontSize: 22,
+    fontSize: 50, // Reducido para un header más compacto
     fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
+    marginBottom: 8,
+    textAlign: 'center', // Cambiado a center
+  },
+  statsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginBottom: 8,
+    width: '100%',
   },
   subtitle: {
     color: '#e0e0e0',
-    fontSize: 16,
+    fontSize: 14, // Reducido
     marginHorizontal: 10,
+    textAlign: 'center', // Cambiado a center
+  },
+  lastUpdated: {
+    color: '#b8c1ec',
+    fontSize: 12, // Reducido
+    marginBottom: 8,
     textAlign: 'center',
   },
   sectionTitle: {
@@ -357,34 +391,48 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   card: {
-    width: '95%',
-    backgroundColor: 'rgba(35, 41, 70, 0.7)',
-    borderRadius: 12,
+    width: '98%',
+    backgroundColor: 'rgba(35, 41, 70, 0.92)',
+    borderRadius: 14,
     padding: 16,
-    marginVertical: 6,
-    borderLeftWidth: 6,
+    marginVertical: 8,
+    borderLeftWidth: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 6,
+    alignSelf: 'center',
   },
   cardTitle: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 2,
     textDecorationLine: 'underline',
   },
   cardSubtitle: {
     color: '#b8c1ec',
-    fontSize: 14,
+    fontSize: 16,
     marginBottom: 2,
   },
   cardDate: {
     color: '#eebbc3',
-    fontSize: 13,
+    fontSize: 15,
     marginTop: 2,
+  },
+  showChartsButton: {
+    backgroundColor: '#1e90ff',
+    paddingVertical: 8, // Reducido
+    paddingHorizontal: 24, // Reducido
+    borderRadius: 8,
+    marginBottom: 8,
+    alignSelf: 'center',
+  },
+  showChartsButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14, // Reducido
   },
   modalOverlay: {
     flex: 1,
@@ -393,8 +441,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: 'rgb(247, 247, 247)',
-    borderRadius: 14,
+    backgroundColor: 'rgba(34, 47, 62, 0.74)',
+    borderRadius: 20,
     padding: 24,
     width: '85%',
     maxHeight: '80%',
@@ -404,7 +452,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 16,
-    color: '#1e90ff',
+    color: '#ffff',
     textAlign: 'center',
   },
   modalRow: {
@@ -415,11 +463,11 @@ const styles = StyleSheet.create({
   },
   modalKey: {
     fontWeight: 'bold',
-    color: '#232946',
+    color: '#ffff',
     flex: 1,
   },
   modalValue: {
-    color: '#232946',
+    color: '#ffff',
     flex: 2,
     textAlign: 'right',
   },
