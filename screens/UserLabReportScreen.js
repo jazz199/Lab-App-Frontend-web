@@ -4,6 +4,7 @@ import { useIsFocused } from '@react-navigation/native';
 import { getUserLabReservas } from '../api';
 import Layout from '../components/layout';
 import { BarChart, PieChart } from 'react-native-chart-kit';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Card = ({ title, subtitle, date, color, onPress }) => (
   <View style={[styles.card, { borderLeftColor: color || '#1e90ff' }]}>
@@ -16,7 +17,7 @@ const Card = ({ title, subtitle, date, color, onPress }) => (
 );
 
 const UserLabReservasScreen = ({ route }) => {
-  const user = route.params?.user || { id: null };
+  const user = route.params?.user || { id: null, nombre: null, apellido: null };
   const isFocused = useIsFocused();
   const [report, setReport] = useState({
     reservas_aprobadas: [],
@@ -178,13 +179,14 @@ const UserLabReservasScreen = ({ route }) => {
   const renderChartsModal = () => (
     <Modal
       visible={showCharts}
+      transparent
       animationType="slide"
       onRequestClose={() => setShowCharts(false)}
     >
-      <View style={{ flex: 1, backgroundColor: '#232946' }}>
+      <View style={{ flex: 1, borderRadius: 14,backgroundColor: 'rgba(35, 41, 70, 0.94)' }}>
         <ScrollView contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
           <Text style={styles.title}>Gráficos Estadísticos</Text>
-          <Text style={styles.sectionTitle}>Estadísticas de Reservas (Barras)</Text>
+          <Text style={styles.sectionTitle}>Estadísticas de Reservas</Text>
           <BarChart
             data={reservaBarData}
             width={screenWidth}
@@ -202,7 +204,7 @@ const UserLabReservasScreen = ({ route }) => {
             }}
             style={{ marginVertical: 8, borderRadius: 16 }}
           />
-          <Text style={styles.sectionTitle}>Distribución de Reservas (Torta)</Text>
+          <Text style={styles.sectionTitle}>Distribución de Reservas</Text>
           <PieChart
             data={reservaPieData}
             width={screenWidth}
@@ -216,7 +218,7 @@ const UserLabReservasScreen = ({ route }) => {
             paddingLeft="15"
             absolute
           />
-          <Text style={styles.sectionTitle}>Estadísticas de Préstamos (Barras)</Text>
+          <Text style={styles.sectionTitle}>Estadísticas de Préstamos</Text>
           <BarChart
             data={prestamoBarData}
             width={screenWidth}
@@ -234,7 +236,7 @@ const UserLabReservasScreen = ({ route }) => {
             }}
             style={{ marginVertical: 8, borderRadius: 16 }}
           />
-          <Text style={styles.sectionTitle}>Distribución de Préstamos (Torta)</Text>
+          <Text style={styles.sectionTitle}>Distribución de Préstamos</Text>
           <PieChart
             data={prestamoPieData}
             width={screenWidth}
@@ -257,17 +259,21 @@ const UserLabReservasScreen = ({ route }) => {
   );
 
   const RenderHeader = () => (
-    <View style={{ alignItems: 'left', paddingVertical: 10 }}>
-      <Text style={styles.title}>Reporte {user.id || 'Desconocido'}</Text>
-      <Text style={styles.lastUpdated}>
-        Última actualización: {lastUpdated ? lastUpdated.toLocaleTimeString('es-ES') : 'Cargando...'}
-      </Text>
-      <TouchableOpacity style={styles.showChartsButton} onPress={() => setShowCharts(true)}>
-        <Text style={styles.showChartsButtonText}>Gráficos</Text>
-      </TouchableOpacity>
-      <View style={styles.statsRow}>
-        <Text style={styles.subtitle}>Total: {report.total_reservas}</Text>
+    <View style={styles.header}>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>Reporte</Text>
+        <Text style={styles.userName}>
+          {user.nombre ? `${user.nombre}${user.apellido ? ` ${user.apellido}` : ''}` : 'Desconocido'}
+        </Text>
       </View>
+      <TouchableOpacity style={styles.newButton} onPress={() => setShowCharts(true)}>
+        <LinearGradient
+          colors={['#1e90ff', '#4682b4']}
+          style={styles.buttonGradient}
+        >
+          <Text style={styles.buttonText}>Gráficos</Text>
+        </LinearGradient>
+      </TouchableOpacity>
     </View>
   );
 
@@ -332,14 +338,15 @@ const UserLabReservasScreen = ({ route }) => {
         ListHeaderComponent={RenderHeader}
         ListFooterComponent={() => (
           <View style={{ alignItems: 'center', paddingBottom: 40, width: '100%' }}>
+            
             {renderSection('Todas las Reservas', report.todas_reservas, 'No hay reservas registradas', '#1e90ff', true)}
-            {renderSection('Reservas Aprobadas', report.reservas_aprobadas, 'No hay reservas aprobadas', '#28a745', true)}
-            {renderSection('Reservas Pendientes', report.reservas_pendientes, 'No hay reservas pendientes', '#87ceeb', true)}
-            {renderSection('Reservas Canceladas', report.reservas_canceladas, 'No hay reservas canceladas', '#ff4444', true)}
-            {renderSection('Todos los Préstamos', report.todos_prestamos, 'No hay préstamos registrados', '#ff8c00', false)}
-            {renderSection('Préstamos Pendientes', report.prestamos_pendientes, 'No hay préstamos pendientes', '#32cd32', false)}
-            {renderSection('Préstamos Atrasados', report.prestamos_atrasados, 'No hay préstamos atrasados', '#dc143c', false)}
-            {renderSection('Préstamos Devueltos', report.prestamos_devueltos, 'No hay préstamos devueltos', '#FFD700', false)}
+            {renderSection('', report.reservas_aprobadas, '', '#28a745', true)}
+            {renderSection('', report.reservas_pendientes, '', '#87ceeb', true)}
+            {renderSection('', report.reservas_canceladas, '', '#ff4444', true)}
+            {renderSection('Todos los prestamos', report.todos_prestamos, 'Ningun Prestamo registrado', '#ff8c00', false)}
+            {renderSection('', report.prestamos_pendientes, '', '#32cd32', false)}
+            {renderSection('', report.prestamos_atrasados, '', '#dc143c', false)}
+            {renderSection('', report.prestamos_devueltos, '', '#FFD700', false)}
           </View>
         )}
       />
@@ -350,29 +357,69 @@ const UserLabReservasScreen = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  title: {
-    color: '#ffffff',
-    fontSize: 50, // Reducido para un header más compacto
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textAlign: 'center', // Cambiado a center
+  header: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    width: '100%', 
+    marginBottom: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: 'transparent',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0,
+    shadowRadius: 5,
+    elevation: -1,
   },
-  statsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginBottom: 8,
-    width: '100%',
+  titleContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
   },
-  subtitle: {
-    color: '#e0e0e0',
-    fontSize: 14, // Reducido
-    marginHorizontal: 10,
-    textAlign: 'center', // Cambiado a center
+  title: { 
+    color: '#ffffff', 
+    fontSize: 24,
+    fontWeight: '700',
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  userName: {
+    color: '#b8c1ec', // Lighter color to differentiate from title
+    fontSize: 16,
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  newButton: { 
+    borderRadius: 8, 
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  buttonGradient: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  buttonText: { 
+    color: '#ffffff', 
+    fontSize: 16, 
+    fontWeight: '600',
+    textTransform: 'uppercase',
   },
   lastUpdated: {
     color: '#b8c1ec',
-    fontSize: 12, // Reducido
+    fontSize: 12,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    color: '#e0e0e0',
+    fontSize: 14,
     marginBottom: 8,
     textAlign: 'center',
   },
@@ -421,19 +468,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginTop: 2,
   },
-  showChartsButton: {
-    backgroundColor: '#1e90ff',
-    paddingVertical: 8, // Reducido
-    paddingHorizontal: 24, // Reducido
-    borderRadius: 8,
-    marginBottom: 8,
-    alignSelf: 'center',
-  },
-  showChartsButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14, // Reducido
-  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(34, 47, 62, 0)',
@@ -441,7 +475,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: 'rgba(34, 47, 62, 0.74)',
+    backgroundColor: 'rgba(34, 47, 62, 0.93)',
     borderRadius: 20,
     padding: 24,
     width: '85%',
