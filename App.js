@@ -14,6 +14,7 @@ import PrestamosScreen from "./screens/PrestamosScreen";
 import ReservasLaboratorioScreen from "./screens/ReservasLaboratorioScreen";
 import CategoriaEquiposScreen from "./screens/CategoriaEquiposScreen";
 import UserLabReportScreen from "./screens/UserLabReportScreen";
+import AdminDashboardScreen from "./screens/AdminDashboardScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -75,7 +76,8 @@ const App = () => {
       <Drawer.Screen name="Prestamos" component={PrestamosScreen} options={{ title: "Préstamos" }} />
       <Drawer.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} options={{ title: "Reservas" }} />
       <Drawer.Screen name="CategoriaEquipos" component={CategoriaEquiposScreen} options={{ title: "Categorías" }} />
-      <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte" }} />
+      <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
+      <Drawer.Screen name="AdminDashboard" component={AdminDashboardScreen} initialParams={{ user }} options={{ title: "Panel de Admin" }} />
     </Drawer.Navigator>
   );
 

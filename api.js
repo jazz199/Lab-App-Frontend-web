@@ -1,6 +1,4 @@
-const BASE_API = 'http://192.168.1.3:3000'; //https://app-usb-bakent-production-2430.up.railway.app
-//http://192.168.1.8:3000
-//mysql://root:ZtHgmGZOXydxvuHFTfVuWkhTzlRqOKLG@caboose.proxy.rlwy.net:10312/railway
+const BASE_API = 'http://192.168.1.3:3000';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Funciones para usuarios
@@ -14,8 +12,6 @@ export const getUsers = async () => {
     throw error;
   }
 };
-
-
 
 export const createUser = async (userData) => {
   try {
@@ -68,12 +64,10 @@ export const getUserLoanReport = async (userId) => {
         'Content-Type': 'application/json'
       }
     });
-
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.message || 'Error en la solicitud');
     }
-
     const data = await response.json();
     console.log('Datos del reporte:', data);
     return data;
@@ -83,7 +77,6 @@ export const getUserLoanReport = async (userId) => {
   }
 };
 
-// Nueva función para obtener el reporte de laboratorios del usuario
 export const getUserLabReservas = async (userId) => {
   try {
     const response = await fetch(`${BASE_API}/users/${userId}/lab-reservas`, {
@@ -102,12 +95,33 @@ export const getUserLabReservas = async (userId) => {
     throw error;
   }
 };
+
+// Nueva función para el dashboard de admin
+export const getAdminDashboardData = async () => {
+  try {
+    const response = await fetch(`${BASE_API}/admin/dashboard`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error en la solicitud');
+    }
+    const data = await response.json();
+    console.log('Datos del dashboard:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching admin dashboard data:', error);
+    throw error;
+  }
+};
+
 // Funciones para laboratorios
 export const getLaboratories = async () => {
   try {
     const response = await fetch(`${BASE_API}/laboratorios`);
     const data = await response.json();
-    console.log('Datos de laboratorios recibidos:', data); // Depuración
+    console.log('Datos de laboratorios recibidos:', data);
     return data;
   } catch (error) {
     console.error('Error fetching laboratories:', error);
@@ -213,13 +227,14 @@ export const deleteEquipment = async (id) => {
   }
 };
 
-export const getMaintenaint = async () => {
+// Corregido el typo de 'Maintenaint' a 'Maintenance'
+export const getMaintenance = async () => {
   try {
     const response = await fetch(`${BASE_API}/mantenimientos`);
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching Mantenimiento:', error);
+    console.error('Error fetching maintenance:', error);
     throw error;
   }
 };
