@@ -1,4 +1,4 @@
-const BASE_API = 'http://192.168.1.3:3000';
+const BASE_API = 'http://192.168.1.5:3000';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Funciones para usuarios
@@ -9,6 +9,21 @@ export const getUsers = async () => {
     return data;
   } catch (error) {
     console.error('Error fetching users:', error);
+    throw error;
+  }
+};
+export const getCalendarEvents = async () => {
+  try {
+    const response = await fetch(`${BASE_API}/events`);
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('Calendar events response error:', response.status, text);
+      throw new Error(`Error en la solicitud: ${response.status} ${text}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching calendar events:', error);
     throw error;
   }
 };

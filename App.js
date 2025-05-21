@@ -15,6 +15,7 @@ import ReservasLaboratorioScreen from "./screens/ReservasLaboratorioScreen";
 import CategoriaEquiposScreen from "./screens/CategoriaEquiposScreen";
 import UserLabReportScreen from "./screens/UserLabReportScreen";
 import AdminDashboardScreen from "./screens/AdminDashboardScreen";
+import CalendarScreen from "./screens/CalendarScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -69,6 +70,7 @@ const App = () => {
       }}
     >
       <Drawer.Screen name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
+      <Drawer.Screen name="Calendario" component={CalendarScreen} options={{ title: "Calendario" }} />
       <Drawer.Screen name="Usuarios" component={UserFormScreen} options={{ title: "Usuarios" }} />
       <Drawer.Screen name="Laboratorios" component={LaboratoryScreen} options={{ title: "Laboratorios" }} />
       <Drawer.Screen name="Equipos" component={EquipmentScreen} options={{ title: "Equipos" }} />
@@ -94,6 +96,7 @@ const App = () => {
       }}
     >
       <Drawer.Screen name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
+      <Drawer.Screen name="Calendario" component={CalendarScreen} options={{ title: "Calendario" }} />
       <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
     </Drawer.Navigator>
   );
