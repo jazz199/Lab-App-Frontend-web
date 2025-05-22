@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Alert, Dimensions, FlatList, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
-import { getAdminDashboardData, getUsers, getLaboratories, getEquipment, getEquipmentCategories, getLoans, getLabReservations, getMaintenance } from '../api';
+import { getAdminDashboardData, getUsers, getLaboratories, getEquipment, getEquipmentCategories, getLoans, getLabReservations, getMaintenaint } from '../api';
 import Layout from '../components/layout';
 import { BarChart, PieChart } from 'react-native-chart-kit';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -111,7 +111,7 @@ const AdminDashboardScreen = ({ route }) => {
         getEquipmentCategories(),
         getLoans(),
         getLabReservations(),
-        getMaintenance(),
+        getMaintenaint(),
       ]);
 
       // Calculate metrics
@@ -357,7 +357,7 @@ const AdminDashboardScreen = ({ route }) => {
         base64: false,
       });
 
-      const fileName = `Dashboard_Admin_${new Date().toISOString().split('T')[0]}.pdf`;
+      const fileName = `Panel_Admin${new Date().toISOString().split('T')[0]}.pdf`;
       const newPath = `${FileSystem.documentDirectory}${fileName}`;
       await FileSystem.moveAsync({
         from: uri,
@@ -463,23 +463,26 @@ const AdminDashboardScreen = ({ route }) => {
         <ScrollView contentContainerStyle={{ alignItems: 'center', padding: 20 }}>
           <Text style={styles.title}>Gráficos Estadísticos</Text>
           <Text style={styles.sectionTitle}>Resumen General</Text>
-          <BarChart
-            data={overviewBarData}
-            width={screenWidth}
-            height={220}
-            yAxisLabel=""
-            chartConfig={{
-              backgroundColor: '#222f3e',
-              backgroundGradientFrom: '#222f3e',
-              backgroundGradientTo: '#1e90ff',
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
-              labelColor: () => '#fff',
-              style: { borderRadius: 16 },
-              propsForBackgroundLines: { stroke: '#444' },
-            }}
-            style={{ marginVertical: 8, borderRadius: 16 }}
-          />
+          <PieChart
+          data={[
+            { name: 'Usuarios', count: dashboardData.total_users, color: '#1e90ff', legendFontColor: '#fff', legendFontSize: 14 },
+            { name: 'Labs', count: dashboardData.total_labs, color: '#28a745', legendFontColor: '#fff', legendFontSize: 14 },
+            { name: 'Equipos', count: dashboardData.total_equipment, color: '#ff8c00', legendFontColor: '#fff', legendFontSize: 14 },
+            { name: 'Préstamos', count: dashboardData.total_loans, color: '#32cd32', legendFontColor: '#fff', legendFontSize: 14 },
+            { name: 'Reservas', count: dashboardData.total_reservations, color: '#dc143c', legendFontColor: '#fff', legendFontSize: 14 },
+            { name: 'Mantenimientos', count: dashboardData.total_maintenances, color: '#FFD700', legendFontColor: '#fff', legendFontSize: 14 },
+          ]}
+          width={screenWidth}
+          height={220}
+          chartConfig={{
+            color: (opacity = 1) => `rgba(255,255,255,${opacity})`,
+            labelColor: () => '#fff',
+          }}
+          accessor="count"
+          backgroundColor="transparent"
+          paddingLeft="15"
+          absolute
+        />
           <Text style={styles.sectionTitle}>Distribución de Usuarios</Text>
           <PieChart
             data={userPieData}
@@ -560,7 +563,7 @@ const AdminDashboardScreen = ({ route }) => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.newButton} onPress={generatePDF}>
           <LinearGradient colors={['#ff4444', '#ff6666']} style={styles.buttonGradient}>
-            <Text style={styles.buttonText}>Descargar PDF</Text>
+            <Text style={styles.buttonText}>Descargar</Text>
           </LinearGradient>
         </TouchableOpacity>
       </View>

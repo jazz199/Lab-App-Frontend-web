@@ -243,7 +243,7 @@ export const deleteEquipment = async (id) => {
 };
 
 // Corregido el typo de 'Maintenaint' a 'Maintenance'
-export const getMaintenance = async () => {
+export const getMaintenaint = async () => {
   try {
     const response = await fetch(`${BASE_API}/mantenimientos`);
     const data = await response.json();
