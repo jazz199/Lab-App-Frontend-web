@@ -1,4 +1,4 @@
-const BASE_API = 'http://192.168.1.5:3000';
+const BASE_API = 'http://192.168.1.3:3000';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Funciones para usuarios

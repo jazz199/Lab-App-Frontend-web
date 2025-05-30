@@ -16,6 +16,7 @@ import CategoriaEquiposScreen from "./screens/CategoriaEquiposScreen";
 import UserLabReportScreen from "./screens/UserLabReportScreen";
 import AdminDashboardScreen from "./screens/AdminDashboardScreen";
 import CalendarScreen from "./screens/CalendarScreen";
+import SupportScreen from "./screens/SuportChatScreen";
 
 const Drawer = createDrawerNavigator();
 const Tab = createMaterialTopTabNavigator();
@@ -28,7 +29,7 @@ const CustomDrawerContent = (props) => {
         <DrawerItemList {...props} />
       </View>
       <TouchableOpacity
-        style={{ padding: 16, backgroundColor: '#ff4444', margin: 16, borderRadius: 8 }}
+        style={{ padding: 16, backgroundColor: 'rgba(208, 18, 18, 0.76)', margin: 16, borderRadius: 8 }}
         onPress={onLogout}
       >
         <Text style={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Cerrar sesión</Text>
@@ -62,7 +63,7 @@ const App = () => {
       drawerContent={(props) => <CustomDrawerContent {...props} onLogout={handleLogout} />}
       screenOptions={{
         drawerPosition: 'left',
-        drawerStyle: { backgroundColor: '#222f3e', width: 250 },
+        drawerStyle: { backgroundColor: 'rgba(11, 15, 41, 0.78)', width: 250 },
         drawerLabelStyle: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
         headerStyle: { backgroundColor: '#222f3e' },
         headerTintColor: '#ffffff',
@@ -71,6 +72,7 @@ const App = () => {
     >
       <Drawer.Screen name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
       <Drawer.Screen name="Calendario" component={CalendarScreen} options={{ title: "Calendario" }} />
+      <Drawer.Screen name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
       <Drawer.Screen name="Usuarios" component={UserFormScreen} options={{ title: "Usuarios" }} />
       <Drawer.Screen name="Laboratorios" component={LaboratoryScreen} options={{ title: "Laboratorios" }} />
       <Drawer.Screen name="Equipos" component={EquipmentScreen} options={{ title: "Equipos" }} />
@@ -98,6 +100,7 @@ const App = () => {
       <Drawer.Screen name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
       <Drawer.Screen name="Calendario" component={CalendarScreen} options={{ title: "Calendario" }} />
       <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
+      <Drawer.Screen name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
     </Drawer.Navigator>
   );
 
@@ -109,6 +112,7 @@ const App = () => {
       <Tab.Screen key="Equipos" name="Equipos" component={EquipmentScreen} />,
       <Tab.Screen key="Mantenimiento" name="Mantenimiento" component={MantenimientoScreen} />,
       <Tab.Screen key="ReporteLaboratorios" name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />,
+      <Tab.Screen Key="Support" name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
     ],
     admin: [<Drawer.Screen key="AdminDrawer" name="AdminDrawer" component={AdminDrawer} options={{ title: "Menu" }} />],
   };
@@ -139,7 +143,7 @@ const App = () => {
               <Tab.Navigator
                 tabBarPosition="bottom"
                 screenOptions={{
-                  tabBarStyle: { backgroundColor: '#222f3e' },
+                  tabBarStyle: { backgroundColor: 'rgba(231, 17, 17, 0.1)' },
                   tabBarLabelStyle: { color: '#ffffff', fontSize: 12, fontWeight: 'bold' },
                   tabBarIndicatorStyle: { backgroundColor: '#1e90ff' },
                   tabBarScrollEnabled: true,
@@ -156,9 +160,9 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#1e90ff' },
+  safeArea: { flex: 1, backgroundColor: 'rgba(4, 2, 46, 0.99)' },
   container: { flex: 1 },
-  header: { backgroundColor: '#222f3e', padding: 15, alignItems: 'flex-start' },
+  header: { backgroundColor: 'rgba(10, 8, 36, 0.72)', padding: 15, alignItems: 'flex-start' },
   headerTitle: { color: '#ffffff', fontSize: 20, fontWeight: 'bold' },
   tabContainer: { flex: 1 },
   errorText: { color: '#ffffff', fontSize: 18, textAlign: 'center', marginTop: 20 },
