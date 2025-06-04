@@ -24,7 +24,7 @@ const UserItem = ({ user, onDelete, onEdit }) => {
 
 const styles =StyleSheet.create({
     itemContainer: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     padding: 15,
     marginVertical: 8,
     borderRadius: 10,

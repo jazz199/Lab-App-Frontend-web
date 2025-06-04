@@ -19,8 +19,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 20,
+    padding: 5,
     alignItems: 'center',
+     marginHorizontal: 0.5, // Ajusta este valor según lo que necesites
   },
 });
 

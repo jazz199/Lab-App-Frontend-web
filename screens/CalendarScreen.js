@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, Platform, Dimensions, ScrollView } from 'react-native';
 import * as Calendar from 'expo-calendar';
 import moment from 'moment-timezone';
 import { getCalendarEvents } from '../api';
+
+// Importa un calendario web visual si es web
+import { Calendar as WebCalendar, momentLocalizer } from 'react-big-calendar';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+const localizer = momentLocalizer(moment);
 
 const CalendarScreen = () => {
     const [events, setEvents] = useState([]);
@@ -10,56 +16,47 @@ const CalendarScreen = () => {
     const [error, setError] = useState(null);
     const [calendarId, setCalendarId] = useState(null);
 
-    // Solicitar permisos y configurar calendario
+    // Solicitar permisos y configurar calendario solo en móvil
     useEffect(() => {
-        const setupCalendar = async () => {
-            try {
-                // Verificar que Calendar esté correctamente importado
-                if (!Calendar || !Calendar.requestCalendarPermissionsAsync) {
-                    throw new Error('Módulo expo-calendar no está disponible');
+        if (Platform.OS !== 'web') {
+            const setupCalendar = async () => {
+                try {
+                    if (!Calendar || !Calendar.requestCalendarPermissionsAsync) {
+                        throw new Error('Módulo expo-calendar no está disponible');
+                    }
+                    const { status } = await Calendar.requestCalendarPermissionsAsync();
+                    if (status !== 'granted') {
+                        Alert.alert('Permiso denegado', 'Se necesita acceso al calendario para agregar eventos.');
+                        setError('Permiso de calendario denegado');
+                        return;
+                    }
+                    const calendars = await Calendar.getCalendarsAsync();
+                    let targetCalendar = calendars.find(cal => cal.title === 'Laboratorios USB' && cal.allowsModifications);
+                    if (!targetCalendar) {
+                        const defaultCalendarSource = Platform.OS === 'android'
+                            ? { isLocalAccount: true, name: 'Laboratorios USB', type: 'LOCAL' }
+                            : calendars.find(cal => cal.source?.type === 'LOCAL')?.source || { isLocalAccount: true, name: 'Laboratorios USB' };
+                        const newCalendar = {
+                            title: 'Laboratorios USB',
+                            color: '#3174ad',
+                            entityType: 'event',
+                            source: defaultCalendarSource,
+                            name: 'laboratorios_usb',
+                            ownerAccount: 'local',
+                            accessLevel: 'owner',
+                            allowedAvailabilities: ['busy', 'free']
+                        };
+                        const newCalendarId = await Calendar.createCalendarAsync(newCalendar);
+                        targetCalendar = await Calendar.getCalendarAsync(newCalendarId);
+                    }
+                    setCalendarId(targetCalendar.id);
+                } catch (error) {
+                    console.error('Error configurando calendario:', error);
+                    setError(`Error al configurar calendario: ${error.message}`);
                 }
-
-                // Solicitar permisos de calendario
-                const { status } = await Calendar.requestCalendarPermissionsAsync();
-                if (status !== 'granted') {
-                    Alert.alert('Permiso denegado', 'Se necesita acceso al calendario para agregar eventos.');
-                    setError('Permiso de calendario denegado');
-                    return;
-                }
-
-                // Obtener calendarios disponibles
-                const calendars = await Calendar.getCalendarsAsync();
-                let targetCalendar = calendars.find(cal => cal.title === 'Laboratorios USB' && cal.allowsModifications);
-
-                // Crear calendario si no existe
-                if (!targetCalendar) {
-                    const defaultCalendarSource = Platform.OS === 'android'
-                        ? { isLocalAccount: true, name: 'Laboratorios USB', type: 'LOCAL' }
-                        : calendars.find(cal => cal.source?.type === 'LOCAL')?.source || { isLocalAccount: true, name: 'Laboratorios USB' };
-
-                    const newCalendar = {
-                        title: 'Laboratorios USB',
-                        color: '#3174ad',
-                        entityType: 'event',
-                        source: defaultCalendarSource,
-                        name: 'laboratorios_usb',
-                        ownerAccount: 'local',
-                        accessLevel: 'owner',
-                        allowedAvailabilities: ['busy', 'free']
-                    };
-
-                    const newCalendarId = await Calendar.createCalendarAsync(newCalendar);
-                    targetCalendar = await Calendar.getCalendarAsync(newCalendarId);
-                }
-
-                setCalendarId(targetCalendar.id);
-            } catch (error) {
-                console.error('Error configurando calendario:', error);
-                setError(`Error al configurar calendario: ${error.message}`);
-            }
-        };
-
-        setupCalendar();
+            };
+            setupCalendar();
+        }
     }, []);
 
     // Obtener eventos del backend
@@ -77,7 +74,6 @@ const CalendarScreen = () => {
                         : moment(event.end).tz('America/Caracas').toDate(),
                     status: event.description.match(/Estado: (\w+)/)?.[1] || 'unknown'
                 }));
-
                 setEvents(formattedEvents);
                 setLoading(false);
             } catch (error) {
@@ -86,19 +82,15 @@ const CalendarScreen = () => {
                 setLoading(false);
             }
         };
+        fetchEvents();
+    }, []);
 
-        if (calendarId) {
-            fetchEvents();
-        }
-    }, [calendarId]);
-
-    // Agregar evento al calendario nativo
+    // Agregar evento al calendario nativo (solo móvil)
     const addEventToCalendar = async (event) => {
         if (!calendarId) {
             Alert.alert('Error', 'No se ha configurado el calendario.');
             return;
         }
-
         try {
             const eventDetails = {
                 calendarId,
@@ -109,7 +101,6 @@ const CalendarScreen = () => {
                 availability: 'busy',
                 timeZone: 'America/Caracas'
             };
-
             await Calendar.createEventAsync(calendarId, eventDetails);
             Alert.alert('Éxito', 'Evento agregado al calendario nativo.');
         } catch (error) {
@@ -118,31 +109,66 @@ const CalendarScreen = () => {
         }
     };
 
-    const renderEvent = ({ item }) => {
-        const statusColor = {
-            cancelada: '#d9534f',
-            activa: '#5cb85c',
-            aprobada: '#5cb85c',
-            atrasado: '#f0ad4e',
-            devuelto: '#777',
-            unknown: '#3174ad'
-        }[item.status.toLowerCase()] || '#3174ad';
+    // Render para web: calendario visual
+    if (Platform.OS === 'web') {
+        const webEvents = events.map(ev => ({
+            ...ev,
+            start: new Date(ev.start),
+            end: new Date(ev.end),
+            allDay: false,
+            resource: ev,
+        }));
 
         return (
-            <TouchableOpacity
-                style={[styles.item, { borderLeftColor: statusColor }]}
-                onPress={() => addEventToCalendar(item)}
-            >
-                <Text style={styles.itemTitle}>{item.title}</Text>
-                <Text style={styles.itemTime}>
-                    {`${moment(item.start).format('DD/MM/YYYY HH:mm')} - ${moment(item.end).format('HH:mm')}`}
-                </Text>
-                <Text style={styles.itemDescription}>{item.description}</Text>
-                <Text style={styles.itemAction}>Toca para agregar al calendario</Text>
-            </TouchableOpacity>
+            <View style={webStyles.webContainer}>
+                <Text style={webStyles.webHeader}>Calendario de Laboratorios</Text>
+                <div style={{ background: '#fff', borderRadius: 12, padding: 12, boxShadow: '0 2px 12px #0002', width: '100%', maxWidth: 1100, margin: '0 auto' }}>
+                    <WebCalendar
+                        localizer={localizer}
+                        events={webEvents}
+                        startAccessor="start"
+                        endAccessor="end"
+                        style={{ height: 600, background: '#fff', borderRadius: 8 }}
+                        eventPropGetter={event => ({
+                            style: {
+                                backgroundColor: {
+                                    cancelada: '#d9534f',
+                                    activa: '#5cb85c',
+                                    aprobada: '#5cb85c',
+                                    atrasado: '#f0ad4e',
+                                    devuelto: '#777',
+                                    unknown: '#3174ad'
+                                }[event.status?.toLowerCase()] || '#3174ad',
+                                color: '#fff',
+                                borderRadius: 6,
+                                border: 'none',
+                                fontWeight: 'bold',
+                                fontSize: 15,
+                                padding: 2,
+                            }
+                        })}
+                        tooltipAccessor={event => event.description}
+                        popup
+                        messages={{
+                            next: "Sig.",
+                            previous: "Ant.",
+                            today: "Hoy",
+                            month: "Mes",
+                            week: "Semana",
+                            day: "Día",
+                            agenda: "Agenda",
+                            showMore: total => `+${total} más`
+                        }}
+                    />
+                </div>
+                <div style={{ textAlign: 'center', marginTop: 18, color: '#3174ad', fontWeight: 500 }}>
+                    Haz clic en un evento para ver detalles.
+                </div>
+            </View>
         );
-    };
+    }
 
+    // Render para móvil/tablet (FlatList)
     if (loading) {
         return (
             <View style={styles.container}>
@@ -164,7 +190,30 @@ const CalendarScreen = () => {
             <Text style={styles.header}>Eventos de Laboratorios</Text>
             <FlatList
                 data={events}
-                renderItem={renderEvent}
+                renderItem={({ item }) => {
+                    const statusColor = {
+                        cancelada: '#d9534f',
+                        activa: '#5cb85c',
+                        aprobada: '#5cb85c',
+                        atrasado: '#f0ad4e',
+                        devuelto: '#777',
+                        unknown: '#3174ad'
+                    }[item.status.toLowerCase()] || '#3174ad';
+
+                    return (
+                        <TouchableOpacity
+                            style={[styles.item, { borderLeftColor: statusColor }]}
+                            onPress={() => addEventToCalendar(item)}
+                        >
+                            <Text style={styles.itemTitle}>{item.title}</Text>
+                            <Text style={styles.itemTime}>
+                                {`${moment(item.start).format('DD/MM/YYYY HH:mm')} - ${moment(item.end).format('HH:mm')}`}
+                            </Text>
+                            <Text style={styles.itemDescription}>{item.description}</Text>
+                            <Text style={styles.itemAction}>Toca para agregar al calendario</Text>
+                        </TouchableOpacity>
+                    );
+                }}
                 keyExtractor={item => item.id}
                 contentContainerStyle={styles.list}
             />
@@ -228,5 +277,24 @@ const styles = StyleSheet.create({
         marginTop: 20
     }
 });
+
+// Estilos para web
+const webStyles = {
+    webContainer: {
+        width: '100%',
+        minHeight: '100vh',
+        background: '#f4f6fa',
+        padding: 0,
+        margin: 0,
+    },
+    webHeader: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#3174ad',
+        textAlign: 'center',
+        margin: '32px 0 24px 0',
+        letterSpacing: 1,
+    }
+};
 
 export default CalendarScreen;

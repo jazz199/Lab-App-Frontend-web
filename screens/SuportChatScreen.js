@@ -1,14 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Linking, Alert, Dimensions, ScrollView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Layout from '../components/layout';
 
-const { width } = Dimensions.get('window'); // Get screen width for responsive design
+const { width } = Dimensions.get('window');
 
 const SupportScreen = ({ route }) => {
   const user = route.params?.user || { nombre: null, apellido: null };
 
-  // Lista de contactos de soporte (puedes modificar estos valores)
   const supportContacts = [
     { type: 'phone', value: '+591 79532646', label: 'Soporte Técnico (591 79532646)' },
     { type: 'phone', value: '+591 71264106', label: 'Soporte Administrativo (+591 71264106)' },
@@ -20,7 +19,6 @@ const SupportScreen = ({ route }) => {
     let url;
     try {
       if (type === 'phone') {
-        // Opción para llamada
         url = `tel:${value}`;
         const canOpenCall = await Linking.canOpenURL(url);
         if (!canOpenCall) {
@@ -29,7 +27,6 @@ const SupportScreen = ({ route }) => {
         }
         Linking.openURL(url);
       } else if (type === 'whatsapp') {
-        // Opción para WhatsApp
         url = `whatsapp://send?phone=${value.replace('+', '')}&text=Hola, necesito soporte para la aplicación USB`;
         const canOpenWhatsApp = await Linking.canOpenURL(url);
         if (!canOpenWhatsApp) {
@@ -38,7 +35,6 @@ const SupportScreen = ({ route }) => {
         }
         Linking.openURL(url);
       } else if (type === 'email') {
-        // Opción para correo
         url = `mailto:${value}?subject=Soporte App USB&body=Hola, necesito ayuda con...`;
         const canOpenEmail = await Linking.canOpenURL(url);
         if (!canOpenEmail) {
@@ -53,21 +49,45 @@ const SupportScreen = ({ route }) => {
     }
   };
 
+  // Responsive web container
+  const isWeb = Platform.OS === 'web';
+  const containerStyle = [
+    styles.container,
+    isWeb && {
+      backgroundColor: '#fff',
+      maxWidth: 600,
+      margin: '40px auto',
+      borderRadius: 18,
+      boxShadow: '0 2px 16px 0 rgba(0, 0, 0, 0)',
+      padding: 32,
+      minHeight: 400,
+    },
+  ];
+  const contactContainerStyle = [
+    styles.contactContainer,
+    isWeb && {
+      backgroundColor: '#f7f7f7',
+      borderRadius: 14,
+      padding: 20,
+      marginTop: 16,
+    },
+  ];
+
   return (
     <Layout>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
+      <ScrollView contentContainerStyle={isWeb ? { alignItems: 'center', paddingVertical: 32, backgroundColor: '#f4f6fa' } : styles.scrollContainer}>
+        <View style={containerStyle}>
           <View style={styles.header}>
-            <Text style={styles.title}>Soporte</Text>
-            <Text style={styles.userName}>
+            <Text style={[styles.title, isWeb && { color: '#1e293b' }]}>Soporte</Text>
+            <Text style={[styles.userName, isWeb && { color: '#475569' }]}>
               {user.nombre ? `${user.nombre}${user.apellido ? ` ${user.apellido}` : ''}` : 'Desconocido'}
             </Text>
           </View>
-          <View style={styles.contactContainer}>
-            <Text style={styles.sectionTitle}>Contactos de Soporte</Text>
+          <View style={contactContainerStyle}>
+            <Text style={[styles.sectionTitle, isWeb && { color: '#1e293b' }]}>Contactos de Soporte</Text>
             {supportContacts.map((contact, index) => (
               <View key={index} style={styles.contactItem}>
-                <Text style={styles.contactLabel}>{contact.label}</Text>
+                <Text style={[styles.contactLabel, isWeb && { color: '#334155' }]}>{contact.label}</Text>
                 {contact.type === 'phone' && (
                   <View style={styles.buttonGroup}>
                     <TouchableOpacity
@@ -109,24 +129,27 @@ const SupportScreen = ({ route }) => {
 
 const styles = StyleSheet.create({
   scrollContainer: {
-    flexGrow: 1, // Ensure ScrollView takes full height
+    flexGrow: 1,
+    backgroundColor: '#0000',
+    paddingVertical: 24,
   },
   container: {
     flex: 1,
     width: '100%',
     padding: width < 400 ? 10 : 20,
-    overflow: 'visible', // Prevent content clipping
+    backgroundColor: 'transparent',
   },
   header: {
     marginBottom: 15,
+    alignItems: 'center',
   },
   title: {
-    color: '#ffffff',
-    fontSize: width < 400 ? 20 : 24,
+    color: '#ffff',
+    fontSize: width < 400 ? 20 : 26,
     fontWeight: '700',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowColor: 'rgba(0, 0, 0, 0.08)',
     textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 1,
   },
   userName: {
     color: '#b8c1ec',
@@ -135,25 +158,27 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   contactContainer: {
-    backgroundColor: 'rgba(35, 41, 70, 0.92)',
+    backgroundColor: 'rgba(35, 41, 70, 0)',
     borderRadius: 14,
     padding: width < 400 ? 12 : 16,
-    overflow: 'visible', // Ensure content is not clipped
+    marginTop: 10,
   },
   sectionTitle: {
-    color: '#ffffff',
-    fontSize: width < 400 ? 16 : 18,
+    color: '#1e90ff',
+    fontSize: width < 400 ? 16 : 20,
     fontWeight: '600',
-    marginBottom: 10,
+    marginBottom: 14,
+    textAlign: 'center',
   },
   contactItem: {
-    marginBottom: 20, // Increased margin for better spacing
-    overflow: 'visible', // Prevent clipping of buttons
+    marginBottom: 20,
+    overflow: 'visible',
   },
   contactLabel: {
-    color: '#b8c1ec',
+    color: '#334155',
     fontSize: width < 400 ? 14 : 16,
     marginBottom: 8,
+    textAlign: 'center',
   },
   buttonGroup: {
     flexDirection: 'row',
@@ -169,15 +194,15 @@ const styles = StyleSheet.create({
     overflow: 'visible',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.13,
+    shadowRadius: 3,
+    elevation: 2,
+    marginBottom: 8,
   },
   emailButton: {
-    flex: 0, // Override flex to allow full width
-    width: '100%', // Ensure email button takes full width
+    flex: 0,
+    width: '100%',
     marginHorizontal: 0,
-     // Remove horizontal margin for full width
   },
   buttonGradient: {
     paddingVertical: 10,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert, Platform, Dimensions, ScrollView } from 'react-native';
 import Layout from '../components/layout';
 import { getLaboratories, createLabReservation, updateLabReservation, updateLaboratory, getLabReservations } from '../api';
 
@@ -69,10 +69,19 @@ const HomeScreen = ({ route }) => {
   useEffect(() => {
     loadLaboratories();
     loadRequests();
+    // eslint-disable-next-line
   }, []);
 
+  // Responsive for web
+  const isWeb = Platform.OS === 'web';
+  const { width } = Dimensions.get('window');
+  const numColumns = isWeb ? (width > 1100 ? 3 : width > 700 ? 2 : 1) : 1;
+  const listContainerStyle = isWeb
+    ? { alignItems: 'center', width: '100%', maxWidth: 1300, alignSelf: 'center', paddingBottom: 40 }
+    : {};
+
   const renderLabItem = ({ item }) => (
-    <View style={styles.labItem}>
+    <View style={[styles.labItem, isWeb && styles.labItemWeb]}>
       <Text style={styles.labTitle}>{item.nombre}</Text>
       <Text style={styles.labText}>Ubicación: {item.ubicacion}</Text>
       <Text style={styles.labText}>Tipo: {item.tipo_laboratorio}</Text>
@@ -87,7 +96,7 @@ const HomeScreen = ({ route }) => {
   );
 
   const renderRequestItem = ({ item }) => (
-    <View style={styles.requestItem}>
+    <View style={[styles.requestItem, isWeb && styles.labItemWeb]}>
       <Text style={styles.requestText}>Usuario ID: {item.usuario_id}</Text>
       <Text style={styles.requestText}>Laboratorio ID: {item.laboratorio_id}</Text>
       <TouchableOpacity style={styles.approveButton} onPress={() => handleApprove(item.reserva_id, item.laboratorio_id)}>
@@ -98,24 +107,31 @@ const HomeScreen = ({ route }) => {
 
   return (
     <Layout>
-      <Text style={styles.title}>Laboratorios Registrados</Text>
-      <FlatList
-        data={laboratories}
-        keyExtractor={(item) => item.laboratorio_id.toString()}
-        renderItem={renderLabItem}
-        style={styles.list}
-      />
-      {user.tipo_usuario === 'admin' && requests.length > 0 && (
-        <>
-          <Text style={styles.title}>Solicitudes Pendientes</Text>
-          <FlatList
-            data={requests}
-            keyExtractor={(item) => item.reserva_id.toString()}
-            renderItem={renderRequestItem}
-            style={styles.list}
-          />
-        </>
-      )}
+        <Text style={styles.title}>Laboratorios Registrados</Text>
+        <FlatList
+          data={laboratories}
+          keyExtractor={(item) => item.laboratorio_id.toString()}
+          renderItem={renderLabItem}
+          style={styles.list}
+          contentContainerStyle={listContainerStyle}
+          numColumns={numColumns}
+          ListEmptyComponent={<Text style={styles.emptyText}>No hay laboratorios</Text>}
+        />
+        {user.tipo_usuario === 'admin' && requests.length > 0 && (
+          <>
+            <Text style={styles.title}>Solicitudes Pendientes</Text>
+            <FlatList
+              data={requests}
+              keyExtractor={(item) => item.reserva_id.toString()}
+              renderItem={renderRequestItem}
+              style={styles.list}
+              contentContainerStyle={listContainerStyle}
+              numColumns={numColumns}
+              ListEmptyComponent={<Text style={styles.emptyText}>No hay solicitudes</Text>}
+            />
+          </>
+        )}
+      
     </Layout>
   );
 };
@@ -136,51 +152,100 @@ const styles = StyleSheet.create({
   },
   labItem: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 15,
-    marginVertical: 8,
-    borderRadius: 10,
+    padding: 18,
+    margin: 10,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+  },
+  labItemWeb: {
+    margin: 14,
+    width: 420,
+    minHeight: 180,
+    boxSizing: 'border-box',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    transition: 'box-shadow 0.2s',
+    cursor: 'pointer',
   },
   labTitle: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 6,
   },
   labText: {
     color: '#e0e0e0',
-    fontSize: 14,
+    fontSize: 15,
+    marginBottom: 2,
   },
   requestButton: {
     backgroundColor: '#1e90ff',
     padding: 10,
     borderRadius: 8,
-    marginTop: 10,
+    marginTop: 12,
     alignItems: 'center',
+    alignSelf: 'flex-start',
+    minWidth: 120,
+    fontWeight: 'bold',
+    shadowColor: '#1e90ff',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
   },
   requestItem: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 15,
-    marginVertical: 8,
-    borderRadius: 10,
+    padding: 18,
+    margin: 10,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.18)',
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
   },
   requestText: {
     color: '#e0e0e0',
-    fontSize: 14,
+    fontSize: 15,
+    marginBottom: 2,
   },
   approveButton: {
     backgroundColor: '#28a745',
     padding: 10,
     borderRadius: 8,
-    marginTop: 10,
+    marginTop: 12,
     alignItems: 'center',
+    alignSelf: 'flex-start',
+    minWidth: 120,
+    fontWeight: 'bold',
+    shadowColor: '#28a745',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
   },
   buttonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  emptyText: {
+    color: '#fff',
+    textAlign: 'center',
+    marginVertical: 20,
+    fontSize: 16,
+    opacity: 0.7,
   },
 });
 
