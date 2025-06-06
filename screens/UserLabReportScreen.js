@@ -45,7 +45,10 @@ const UserLabReservasScreen = ({ route }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [showCharts, setShowCharts] = useState(false);
 
-  const screenWidth = Dimensions.get('window').width - 32;
+  // Adaptar ancho para web
+  const isWeb = Platform.OS === 'web';
+  const { width } = Dimensions.get('window');
+  const screenWidth = isWeb ? Math.min(width, 800) - 32 : width - 32;
 
   const reservaBarData = {
     labels: ['Total', 'Aprobadas', 'Pendientes', 'Canceladas'],
@@ -281,13 +284,14 @@ const UserLabReservasScreen = ({ route }) => {
     setModalVisible(true);
   };
 
+  // Adaptar sección para web
   const renderSection = (title, data, color, isReserva) => {
     if (!data || data.length === 0) {
       return null;
     }
     return (
-      <View style={{ width: '100%', alignItems: 'center', marginBottom: 16 }}>
-        {title ? <Text style={styles.sectionTitle}>{title}</Text> : null}
+      <View style={[{ width: '100%', alignItems: 'center', marginBottom: 16 }, isWeb && { maxWidth: 800 }]}>
+        {title ? <Text style={[styles.sectionTitle, isWeb && { color: '#fff' }]}>{title}</Text> : null}
         {data.map((item, idx) => {
           const card = getCardData(item, isReserva);
           return (
@@ -388,10 +392,10 @@ const UserLabReservasScreen = ({ route }) => {
   );
 
   const RenderHeader = () => (
-    <View style={styles.header}>
+    <View style={[styles.header, isWeb && { maxWidth: 1200, margin: '0 auto', backgroundColor: 'rgba(34, 47, 62, 0)' }]}>
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>Reporte</Text>
-        <Text style={styles.userName}>
+        <Text style={[styles.title, isWeb && { color: '#fff' }]}>Reporte</Text>
+        <Text style={[styles.userName, isWeb && { color: '#334155' }]}>
           {user.nombre ? `${user.nombre}${user.apellido ? ` ${user.apellido}` : ''}` : 'Desconocido'}
         </Text>
       </View>
@@ -424,7 +428,7 @@ const UserLabReservasScreen = ({ route }) => {
       onRequestClose={() => setModalVisible(false)}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, isWeb && { width: 500 }]}>
           <ScrollView>
             <Text style={styles.modalTitle}>{selectedItem?.isReserva ? 'Detalles de la Reserva' : 'Detalles del Préstamo'}</Text>
             {selectedItem && (
@@ -469,6 +473,52 @@ const UserLabReservasScreen = ({ route }) => {
     </Modal>
   );
 
+  // Contenedor principal adaptado para web
+  const containerStyle = [
+    isWeb && {
+      //backgroundColor: 'rgba(34, 47, 62, 0.93)',
+      maxWidth: 1350,
+      margin: '40px auto',
+      borderRadius: 18,
+      boxShadow: '0 2px 16px 0 rgba(0,0,0,0.08)',
+      padding: 32,
+      minHeight: 400,
+      width: '100%',
+    },
+  ];
+
+  // Usar ScrollView en web para mejor experiencia
+  if (isWeb) {
+    return (
+      <Layout>
+        <ScrollView contentContainerStyle={{ alignItems: 'center', paddingVertical: 32, minWidth: 1600, }}>
+          <View style={containerStyle}>
+            <FlatList
+              data={[]}
+              renderItem={() => null}
+              ListHeaderComponent={RenderHeader}
+              ListFooterComponent={() => (
+                <View style={{ alignItems: 'center', paddingBottom: 40, width: '100%' }}>
+                  {renderSection('Todas las Reservas', report.todas_reservas, '#1e90ff', true)}
+                  {renderSection('Reservas Aprobadas', report.reservas_aprobadas, '#28a745', true)}
+                  {renderSection('Reservas Pendientes', report.reservas_pendientes, '#87ceeb', true)}
+                  {renderSection('Reservas Canceladas', report.reservas_canceladas, '#ff4444', true)}
+                  {renderSection('Todos los Préstamos', report.todos_prestamos, '#ff8c00', false)}
+                  {renderSection('Préstamos Pendientes', report.prestamos_pendientes, '#32cd32', false)}
+                  {renderSection('Préstamos Atrasados', report.prestamos_atrasados, '#dc143c', false)}
+                  {renderSection('Préstamos Devueltos', report.prestamos_devueltos, '#FFD700', false)}
+                </View>
+              )}
+            />
+            {renderItemModal()}
+            {renderChartsModal()}
+          </View>
+        </ScrollView>
+      </Layout>
+    );
+  }
+
+  // Móvil (sin cambios)
   return (
     <Layout>
       <FlatList
@@ -516,8 +566,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   buttonContainer: {
-    flexDirection: 'column', // Cambiado de 'row' a 'column' para apilar botones
-    alignItems: 'flex-end', // Alinear botones a la derecha
+    flexDirection: 'column',
+    alignItems: 'flex-end',
     justifyContent: 'center',
   },
   title: { 
@@ -542,7 +592,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 3,
-    marginVertical: 5, // Espaciado vertical entre botones
+    marginVertical: 5,
   },
   buttonGradient: {
     paddingVertical: 12,
@@ -582,6 +632,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
     alignSelf: 'center',
+    ...(Platform.OS === 'web' && { maxWidth: 700 }),
   },
   cardTitle: {
     color: '#fff',
@@ -602,53 +653,83 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(34, 47, 62, 0)',
+    backgroundColor: Platform.OS === 'web' ? 'rgba(30, 41, 59, 0.35)' : 'rgba(34, 47, 62, 0)',
     justifyContent: 'center',
     alignItems: 'center',
+    ...(Platform.OS === 'web' && {
+      backdropFilter: 'blur(2px)',
+      minHeight: '100vh',
+      minWidth: '100vw',
+      zIndex: 1000,
+      position: 'fixed',
+      top: 0,
+      left: 0,
+    }),
   },
   modalContent: {
-    backgroundColor: 'rgba(34, 47, 62, 0.93)',
-    borderRadius: 20,
-    padding: 24,
-    width: '85%',
-    maxHeight: '80%',
+    backgroundColor: Platform.OS === 'web' ? 'rgba(34, 47, 62, 0.93)' : 'rgba(34, 47, 62, 0.93)',
+    borderRadius: 24,
+    padding: Platform.OS === 'web' ? 40 : 24,
+    width: Platform.OS === 'web' ? 520 : '85%',
+    maxHeight: Platform.OS === 'web' ? 600 : '80%',
     alignItems: 'center',
+    boxShadow: Platform.OS === 'web'
+      ? '0 8px 32px 0 rgba(31, 38, 135, 0.18)'
+      : undefined,
+    ...(Platform.OS === 'web' && {
+      border: '1px solid #e0e7ef',
+      transition: 'all 0.2s',
+      overflow: 'auto',
+    }),
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 16,
-    color: '#ffff',
+    marginBottom: 18,
+    color: Platform.OS === 'web' ? '#fff' : '#fff',
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   modalRow: {
     flexDirection: 'row',
     marginBottom: 8,
     width: '100%',
     justifyContent: 'space-between',
+    ...(Platform.OS === 'web' && { borderBottomWidth: 1, borderBottomColor: 'rgba(34, 47, 62, 0.93)', paddingBottom: 4 }),
   },
   modalKey: {
     fontWeight: 'bold',
-    color: '#ffff',
+    color: Platform.OS === 'web' ? '#fff' : '#fff',
     flex: 1,
+    fontSize: Platform.OS === 'web' ? 16 : 15,
   },
   modalValue: {
-    color: '#ffff',
+    color: Platform.OS === 'web' ? '#fff' : '#fff',
     flex: 2,
     textAlign: 'right',
+    fontSize: Platform.OS === 'web' ? 16 : 15,
   },
   closeButton: {
-    marginTop: 20,
+    marginTop: 28,
     backgroundColor: '#1e90ff',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 36,
+    borderRadius: 10,
     alignSelf: 'center',
+    boxShadow: Platform.OS === 'web'
+      ? '0 2px 8px 0 rgba(30, 144, 255, 0.15)'
+      : undefined,
+    ...(Platform.OS === 'web' && {
+      transition: 'all 0.2s',
+      marginBottom: 10,
+      marginTop: 32,
+    }),
   },
   closeButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16,
+    fontSize: 17,
+    letterSpacing: 0.5,
   },
 });
 

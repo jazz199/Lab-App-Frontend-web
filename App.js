@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
@@ -38,6 +38,81 @@ const CustomDrawerContent = (props) => {
   );
 };
 
+// Tabs principales para web
+const MainTabs = ({ user, role }) => (
+  <Tab.Navigator
+    tabBarPosition="top"
+    screenOptions={{
+      tabBarStyle: { backgroundColor: 'rgba(28, 42, 90, 1)' },
+      tabBarLabelStyle: { color: '#ffffff', fontSize: 12, fontWeight: 'bold' },
+      tabBarIndicatorStyle: { backgroundColor: '#1e90ff' },
+      tabBarScrollEnabled: true,
+    }}
+  >
+    <Tab.Screen name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
+    <Tab.Screen name="Calendario" component={CalendarScreen} options={{ title: "Calendario" }} />
+    {role === "admin" && (
+      <>
+        <Tab.Screen name="Usuarios" component={UserFormScreen} options={{ title: "Usuarios" }} />
+        <Tab.Screen name="Laboratorios" component={LaboratoryScreen} options={{ title: "Laboratorios" }} />
+        <Tab.Screen name="Equipos" component={EquipmentScreen} options={{ title: "Equipos" }} />
+        <Tab.Screen name="Mantenimiento" component={MantenimientoScreen} options={{ title: "Mantenimiento" }} />
+        <Tab.Screen name="Prestamos" component={PrestamosScreen} options={{ title: "Préstamos" }} />
+        <Tab.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} options={{ title: "Reservas" }} />
+      </>
+    )}
+    {(role === "personal" || role === "tecnico") && (
+      <>
+        <Tab.Screen name="Equipos" component={EquipmentScreen} options={{ title: "Equipos" }} />
+        <Tab.Screen name="Mantenimiento" component={MantenimientoScreen} options={{ title: "Mantenimiento" }} />
+      </>
+    )}
+  </Tab.Navigator>
+);
+
+// Drawer para web: tabs principales + drawer para las demás (incluye Reporte Labs y Soporte)
+const WebAdminDrawer = ({ user, onLogout }) => (
+  <Drawer.Navigator
+    drawerContent={(props) => <CustomDrawerContent {...props} onLogout={onLogout} />}
+    screenOptions={{
+      drawerPosition: 'left',
+      drawerStyle: { backgroundColor: 'rgba(42, 47, 74, 0.76), rgba(42, 47, 74, 0.68)', width: 250 },
+      drawerLabelStyle: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
+      headerStyle: { backgroundColor: 'rgba(28, 42, 90, 1)' },
+      headerTintColor: '#ffffff',
+      headerTitleStyle: { fontWeight: 'bold' },
+    }}
+  >
+    <Drawer.Screen name="Principal" options={{ title: "Principal" }}>
+      {() => <MainTabs user={user} role="admin" />}
+    </Drawer.Screen>
+    <Drawer.Screen name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
+    <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
+    <Drawer.Screen name="CategoriaEquipos" component={CategoriaEquiposScreen} options={{ title: "Categorías" }} />
+    <Drawer.Screen name="AdminDashboard" component={AdminDashboardScreen} initialParams={{ user }} options={{ title: "Panel de Admin" }} />
+  </Drawer.Navigator>
+);
+
+const WebUserDrawer = ({ user, onLogout }) => (
+  <Drawer.Navigator
+    drawerContent={(props) => <CustomDrawerContent {...props} onLogout={onLogout} />}
+    screenOptions={{
+      drawerPosition: 'left',
+      drawerStyle: { backgroundColor: 'rgba(42, 47, 74, 0.76), rgba(42, 47, 74, 0.68)', width: 250 },
+      drawerLabelStyle: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
+      headerStyle: { backgroundColor: '#222f3e' },
+      headerTintColor: '#ffffff',
+      headerTitleStyle: { fontWeight: 'bold' },
+    }}
+  >
+    <Drawer.Screen name="Principal" options={{ title: "Principal" }}>
+      {() => <MainTabs user={user} role={user.tipo_usuario} />}
+    </Drawer.Screen>
+    <Drawer.Screen name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
+    <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
+  </Drawer.Navigator>
+);
+
 const App = () => {
   const [user, setUser] = useState(null);
   const [showRegister, setShowRegister] = useState(false);
@@ -58,14 +133,15 @@ const App = () => {
     return showRegister ? <RegisterScreen onRegister={handleRegister} /> : <LoginScreen onLogin={handleLogin} />;
   }
 
+  // Navegación móvil (Drawer clásico)
   const AdminDrawer = () => (
     <Drawer.Navigator
       drawerContent={(props) => <CustomDrawerContent {...props} onLogout={handleLogout} />}
       screenOptions={{
         drawerPosition: 'left',
-        drawerStyle: { backgroundColor: 'rgba(11, 15, 41, 0.78)', width: 250 },
+        drawerStyle: { backgroundColor: 'rgba(42, 47, 74, 0.76), rgba(42, 47, 74, 0.68)', width: 250 },
         drawerLabelStyle: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
-        headerStyle: { backgroundColor: '#222f3e' },
+        headerStyle: { backgroundColor: 'rgba(28, 42, 90, 1)' },
         headerTintColor: '#ffffff',
         headerTitleStyle: { fontWeight: 'bold' },
       }}
@@ -90,7 +166,7 @@ const App = () => {
       drawerContent={(props) => <CustomDrawerContent {...props} onLogout={handleLogout} />}
       screenOptions={{
         drawerPosition: 'left',
-        drawerStyle: { backgroundColor: '#222f3e', width: 250 },
+        drawerStyle: { backgroundColor: 'rgba(42, 47, 74, 0.76), rgba(42, 47, 74, 0.68)', width: 250 },
         drawerLabelStyle: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
         headerStyle: { backgroundColor: '#222f3e' },
         headerTintColor: '#ffffff',
@@ -104,29 +180,47 @@ const App = () => {
     </Drawer.Navigator>
   );
 
+  const TecnicoNavigator = () => (
+    <Drawer.Navigator
+      drawerContent={(props) => <CustomDrawerContent {...props} onLogout={handleLogout} />}
+      screenOptions={{
+        drawerPosition: 'left',
+        drawerStyle: { backgroundColor: 'rgba(42, 47, 74, 0.76), rgba(42, 47, 74, 0.68)', width: 250 },
+        drawerLabelStyle: { color: '#ffffff', fontSize: 16, fontWeight: 'bold' },
+        headerStyle: { backgroundColor: 'rgba(28, 42, 90, 1)' },
+        headerTintColor: '#ffffff',
+        headerTitleStyle: { fontWeight: 'bold' },
+      }}
+    >
+      <Drawer.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
+      <Drawer.Screen key="Equipos" name="Equipos" component={EquipmentScreen} />
+      <Drawer.Screen key="Mantenimiento" name="Mantenimiento" component={MantenimientoScreen} />
+      <Drawer.Screen key="ReporteLaboratorios" name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
+      <Drawer.Screen key="Support" name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
+    </Drawer.Navigator>
+  );
+
   const roleScreens = {
     estudiante: [<Drawer.Screen key="UserDrawer" name="UserDrawer" component={UserDrawer} options={{ title: "Menu" }} />],
     profesor: [<Drawer.Screen key="UserDrawer" name="UserDrawer" component={UserDrawer} options={{ title: "Menu" }} />],
-    personal: [
-      <Tab.Screen key="Home" name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />,
-      <Tab.Screen key="Equipos" name="Equipos" component={EquipmentScreen} />,
-      <Tab.Screen key="Mantenimiento" name="Mantenimiento" component={MantenimientoScreen} />,
-      <Tab.Screen key="ReporteLaboratorios" name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />,
-      <Tab.Screen Key="Support" name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
-    ],
+    personal: [<Drawer.Screen key="TecnicoNavigator" name="TecnicoNavigator" component={TecnicoNavigator} options={{ title: "Menu" }} />],
     admin: [<Drawer.Screen key="AdminDrawer" name="AdminDrawer" component={AdminDrawer} options={{ title: "Menu" }} />],
   };
 
   const screens = roleScreens[user.tipo_usuario] || [];
-
   if (screens.length === 0) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <Text style={styles.errorText}>Rol de usuario no válido: {user.tipo_usuario}</Text>
-        </View>
-      </SafeAreaView>
+    Alert.alert(
+      "Error",
+      "Usuario o contraseña equivocados",
+      [
+        {
+          text: "OK",
+          onPress: () => setUser(null), // Volver al login
+        },
+      ],
+      { cancelable: false }
     );
+    return null; // No renderices el Tab.Navigator
   }
 
   return (
@@ -137,20 +231,28 @@ const App = () => {
             <Text style={styles.headerTitle}>Lab-App</Text>
           </View>
           <View style={styles.tabContainer}>
-            {['admin', 'estudiante', 'profesor'].includes(user.tipo_usuario) ? (
-              user.tipo_usuario === 'admin' ? <AdminDrawer /> : <UserDrawer />
+            {Platform.OS === "web" ? (
+              user.tipo_usuario === "admin" ? (
+                <WebAdminDrawer user={user} onLogout={handleLogout} />
+              ) : (
+                <WebUserDrawer user={user} onLogout={handleLogout} />
+              )
             ) : (
-              <Tab.Navigator
-                tabBarPosition="bottom"
-                screenOptions={{
-                  tabBarStyle: { backgroundColor: 'rgba(231, 17, 17, 0.1)' },
-                  tabBarLabelStyle: { color: '#ffffff', fontSize: 12, fontWeight: 'bold' },
-                  tabBarIndicatorStyle: { backgroundColor: '#1e90ff' },
-                  tabBarScrollEnabled: true,
-                }}
-              >
-                {screens}
-              </Tab.Navigator>
+              ['admin', 'estudiante', 'profesor', 'personal'].includes(user.tipo_usuario) ? (
+                user.tipo_usuario === 'admin' ? <AdminDrawer /> : <UserDrawer />
+              ) : (
+                <Tab.Navigator
+                  tabBarPosition="bottom"
+                  screenOptions={{
+                    tabBarStyle: { backgroundColor: 'rgba(231, 17, 17, 0.1)' },
+                    tabBarLabelStyle: { color: '#ffffff', fontSize: 12, fontWeight: 'bold' },
+                    tabBarIndicatorStyle: { backgroundColor: '#1e90ff' },
+                    tabBarScrollEnabled: true,
+                  }}
+                >
+                  {screens}
+                </Tab.Navigator>
+              )
             )}
           </View>
         </View>
@@ -162,7 +264,7 @@ const App = () => {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: 'rgba(4, 2, 46, 0.99)' },
   container: { flex: 1 },
-  header: { backgroundColor: 'rgba(10, 8, 36, 0.72)', padding: 15, alignItems: 'flex-start' },
+  header: { backgroundColor: 'rgba(28, 42, 90, 1)', padding: 15, alignItems: 'flex-start' },
   headerTitle: { color: '#ffffff', fontSize: 20, fontWeight: 'bold' },
   tabContainer: { flex: 1 },
   errorText: { color: '#ffffff', fontSize: 18, textAlign: 'center', marginTop: 20 },
