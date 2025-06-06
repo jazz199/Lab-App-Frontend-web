@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, Platform, Dimensions, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, Platform, Dimensions, ScrollView } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getUsers, createUser, updateUser, deleteUser } from '../api.js';
 import Layout from '../components/layout.js';
-import UserList from '../components/UserList.js';
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,9 +21,11 @@ const UserFormScreen = () => {
   const loadUsers = async () => {
     try {
       const data = await getUsers();
-      setUsers(data);
+      console.log('Datos de usuarios:', data); // Depuración
+      const validData = data.filter(user => user.usuario_id !== undefined && user.usuario_id !== null);
+      setUsers(validData);
     } catch (error) {
-      console.error('Error en load Users:', error);
+      console.error('Error en loadUsers:', error);
     }
   };
 
@@ -51,24 +52,41 @@ const UserFormScreen = () => {
 
   const handleEdit = (user) => {
     setForm({
-      nombre: user.nombre,
-      apellido: user.apellido,
-      email: user.email,
-      numero_identificacion: user.numero_identificacion,
+      nombre: user.nombre || '',
+      apellido: user.apellido || '',
+      email: user.email || '',
+      numero_identificacion: user.numero_identificacion || '',
       tipo_usuario: user.tipo_usuario || 'estudiante',
     });
     setEditingUserId(user.usuario_id);
     setIsFormVisible(true);
   };
 
+  const handleNew = () => {
+    setForm({
+      nombre: '',
+      apellido: '',
+      email: '',
+      numero_identificacion: '',
+      tipo_usuario: 'estudiante',
+    });
+    setEditingUserId(null);
+    setIsFormVisible(true);
+  };
+
   const handleSubmit = async () => {
     try {
+      const userData = { ...form };
       if (editingUserId) {
-        const updatedUser = await updateUser(editingUserId, form);
-        setUsers(users.map(user => (user.usuario_id === editingUserId ? updatedUser : user)));
+        const updatedUser = await updateUser(editingUserId, userData);
+        console.log('Usuario actualizado:', updatedUser); // Depuración
+        setUsers(users.map(user =>
+          user.usuario_id === editingUserId ? { usuario_id: editingUserId, ...userData } : user
+        ));
         Alert.alert("Éxito", "Usuario actualizado correctamente");
       } else {
-        const newUser = await createUser(form);
+        const newUser = await createUser(userData);
+        console.log('Nuevo usuario creado:', newUser); // Depuración
         setUsers([...users, newUser]);
         Alert.alert("Éxito", "Usuario creado correctamente");
       }
@@ -84,94 +102,106 @@ const UserFormScreen = () => {
     loadUsers();
   }, []);
 
-  // Responsive styles for web
   const isWeb = Platform.OS === 'web';
-  const formWidth = isWeb ? (width > 1200 ? 600 : width > 800 ? 500 : width > 600 ? 400 : '90%') : '90%';
-  const listWidth = isWeb ? (width > 1200 ? 1000 : width > 800 ? 800 : width > 600 ? 600 : '90%') : '100%';
+  const cardWidth = isWeb ? (width > 1200 ? 600 : width > 800 ? 500 : width > 600 ? 400 : '90%') : '90%';
+  const containerWidth = isWeb ? (width > 1200 ? 1000 : width > 800 ? 800 : width > 600 ? 600 : '90%') : '100%';
 
   if (isFormVisible) {
     return (
       <Layout>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardAvoidingView}
-        >
-          <ScrollView
-            contentContainerStyle={[styles.formScroll, isWeb && { alignItems: 'center' }]}
-          >
-            <View style={[styles.formContainer, { width: formWidth }]}>
-              <Text style={styles.title}>{editingUserId ? "Editar Usuario" : "Nuevo Usuario"}</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Nombre"
-                placeholderTextColor="#aaa"
-                value={form.nombre}
-                onChangeText={(text) => setForm({ ...form, nombre: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Apellido"
-                placeholderTextColor="#aaa"
-                value={form.apellido}
-                onCh
-                angeText={(text) => setForm({ ...form, apellido: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Email"
-                placeholderTextColor="#aaa"
-                value={form.email}
-                onChangeText={(text) => setForm({ ...form, email: text })}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Número de Identificación"
-                placeholderTextColor="#aaa"
-                value={form.numero_identificacion}
-                onChangeText={(text) => setForm({ ...form, numero_identificacion: text })}
-              />
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={form.tipo_usuario}
-                  style={styles.picker}
-                  onValueChange={(itemValue) => setForm({ ...form, tipo_usuario: itemValue })}
-                >
-                  <Picker.Item label="Estudiante" value="estudiante" />
-                  <Picker.Item label="Profesor" value="profesor" />
-                  <Picker.Item label="Personal" value="personal" />
-                </Picker>
-              </View>
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Guardar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setIsFormVisible(false)}>
-                <Text style={styles.buttonText}>Cancelar</Text>
-              </TouchableOpacity>
+        
+          <View style={[styles.formContainer, { width: cardWidth }]}>
+            <Text style={styles.title}>{editingUserId ? "Editar Usuario" : "Nuevo Usuario"}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre"
+              placeholderTextColor="#aaa"
+              value={form.nombre}
+              onChangeText={(text) => setForm({ ...form, nombre: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Apellido"
+              placeholderTextColor="#aaa"
+              value={form.apellido}
+              onChangeText={(text) => setForm({ ...form, apellido: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#aaa"
+              value={form.email}
+              onChangeText={(text) => setForm({ ...form, email: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Número de Identificación"
+              placeholderTextColor="#aaa"
+              value={form.numero_identificacion}
+              onChangeText={(text) => setForm({ ...form, numero_identificacion: text })}
+            />
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={form.tipo_usuario}
+                style={styles.picker}
+                onValueChange={(itemValue) => setForm({ ...form, tipo_usuario: itemValue })}
+              >
+                <Picker.Item label="Estudiante" value="estudiante" />
+                <Picker.Item label="Profesor" value="profesor" />
+                <Picker.Item label="Personal" value="personal" />
+              </Picker>
             </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>Guardar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsFormVisible(false)}>
+              <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <View style={[styles.header, isWeb && { maxWidth: listWidth, marginHorizontal: 'auto' }]}>
+      <View style={[styles.header, isWeb && { maxWidth: containerWidth, marginHorizontal: 'auto' }]}>
         <Text style={styles.title}>Usuarios</Text>
-        <TouchableOpacity style={styles.newButton} onPress={() => setIsFormVisible(true)}>
+        <TouchableOpacity style={styles.newButton} onPress={handleNew}>
           <Text style={styles.buttonText}>Nuevo</Text>
         </TouchableOpacity>
       </View>
-      <View style={[styles.listContainer, isWeb && { alignItems: 'center' }]}>
-        <ScrollView
-          contentContainerStyle={[styles.listScroll, isWeb && { alignItems: 'center', paddingHorizontal: 10 }]}
-          style={[isWeb && { maxHeight: height * 0.8, width: '100%' }]}
-        >
-          <View style={{ width: listWidth, maxWidth: '100%' }}>
-            <UserList users={users} onDelete={handleDelete} onEdit={handleEdit} />
-          </View>
-        </ScrollView>
-      </View>
+      <ScrollView
+        contentContainerStyle={[styles.listScroll, isWeb && { alignItems: 'center', paddingHorizontal: 10 }]}
+        style={[isWeb && { maxHeight: height * 0.8, width: '100%' }]}
+      >
+        <View style={[styles.listContainer, { width: cardWidth }]}>
+          {users.length === 0 ? (
+            <Text style={styles.noDataText}>No hay usuarios disponibles</Text>
+          ) : (
+            users.map((user, index) => (
+              <View
+                key={user.usuario_id?.toString() ?? `user-${index}`}
+                style={[styles.userItem, isWeb && { width: cardWidth, marginHorizontal: 'auto' }]}
+              >
+                <Text style={styles.itemTitle}>{user.nombre}</Text>
+                <Text style={styles.itemText}>Apellido: {user.apellido}</Text>
+                <Text style={styles.itemText}>Email: {user.email}</Text>
+                <Text style={styles.itemText}>Nº Identificación: {user.numero_identificacion}</Text>
+                <Text style={styles.itemText}>Tipo: {user.tipo_usuario}</Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(user)}>
+                    <Text style={styles.buttonText}>Editar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(user.usuario_id)}>
+                    <Text style={styles.buttonText}>Eliminar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))
+          )}
+        </View>
+      </ScrollView>
     </Layout>
   );
 };
@@ -184,7 +214,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 15,
     paddingHorizontal: 15,
-    marginTop: 2,
+    marginTop: 15,
   },
   title: {
     color: '#ffffff',
@@ -207,9 +237,54 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
-  keyboardAvoidingView: {
-    flex: 1,
+  userItem: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 18,
+    marginVertical: 10,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.18)',
     width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
+  itemTitle: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 5,
+  },
+  itemText: {
+    color: '#ffffff',
+    fontSize: 16,
+    marginVertical: 3,
+  },
+  noDataText: {
+    color: '#ffffff',
+    fontSize: 16,
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 10,
+  },
+  editButton: {
+    backgroundColor: '#1e90ff',
+    padding: 8,
+    borderRadius: 5,
+    marginLeft: 10,
+  },
+  deleteButton: {
+    backgroundColor: '#ff4444',
+    padding: 8,
+    borderRadius: 5,
+    marginLeft: 10,
   },
   formScroll: {
     flexGrow: 1,

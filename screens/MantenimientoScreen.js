@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, Modal, Pressable, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, Modal, Pressable, ScrollView, Dimensions, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getMaintenaint, createMaintenance, updateMaintenance, deleteMaintenance, getEquipment } from '../api';
 import Layout from '../components/layout';
-import { useWindowDimensions } from 'react-native';
 
-// Component to manage maintenance records, displaying items side by side on web
+const { width, height } = Dimensions.get('window');
+
 const MantenimientoScreen = () => {
-  // Get window width for responsive layout
-  const { width } = useWindowDimensions();
-  // State for maintenance records, equipment list, form visibility, and delete modal
   const [mantenimiento, setMantenimiento] = useState([]);
   const [equipment, setEquipment] = useState([]);
   const [isFormVisible, setIsFormVisible] = useState(false);
@@ -25,33 +22,33 @@ const MantenimientoScreen = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [maintToDelete, setMaintToDelete] = useState(null);
 
-  // Load maintenance data from API
   const loadMaintenance = async () => {
     try {
       const data = await getMaintenaint();
-      setMantenimiento(data);
+      console.log('Datos de mantenimiento:', data); // Depuración
+      const validData = data.filter(maint => maint.mantenimiento_id !== undefined && maint.mantenimiento_id !== null);
+      setMantenimiento(validData);
     } catch (error) {
       console.error('Error en loadMaintenance:', error);
     }
   };
 
-  // Load equipment data from API
   const loadEquipment = async () => {
     try {
       const data = await getEquipment();
-      setEquipment(data);
+      console.log('Datos de equipos:', data); // Depuración
+      const validData = data.filter(equip => equip.equipo_id !== undefined && equip.equipo_id !== null);
+      setEquipment(validData);
     } catch (error) {
       console.error('Error en loadEquipment:', error);
     }
   };
 
-  // Open delete confirmation modal
   const handleDelete = (id) => {
     setMaintToDelete(id);
     setIsDeleteModalVisible(true);
   };
 
-  // Confirm deletion and update state
   const confirmDelete = async () => {
     try {
       await deleteMaintenance(maintToDelete);
@@ -66,7 +63,6 @@ const MantenimientoScreen = () => {
     }
   };
 
-  // Populate form for editing maintenance
   const handleEdit = (maint) => {
     setForm({
       equipo_id: maint.equipo_id ? maint.equipo_id.toString() : '',
@@ -80,7 +76,19 @@ const MantenimientoScreen = () => {
     setIsFormVisible(true);
   };
 
-  // Submit form to create or update maintenance
+  const handleNew = () => {
+    setForm({
+      equipo_id: '',
+      fecha_inicio: '',
+      fecha_fin: '',
+      descripcion: '',
+      tecnico: '',
+      costo: '',
+    });
+    setEditingMaintId(null);
+    setIsFormVisible(true);
+  };
+
   const handleSubmit = async () => {
     try {
       const maintData = {
@@ -89,13 +97,15 @@ const MantenimientoScreen = () => {
         costo: form.costo ? parseFloat(form.costo) : null,
       };
       if (editingMaintId) {
-        await updateMaintenance(editingMaintId, maintData);
+        const updatedMaint = await updateMaintenance(editingMaintId, maintData);
+        console.log('Mantenimiento actualizado:', updatedMaint); // Depuración
         setMantenimiento(mantenimiento.map(maint =>
-          maint.mantenimiento_id === editingMaintId ? { ...maint, ...maintData } : maint
+          maint.mantenimiento_id === editingMaintId ? { mantenimiento_id: editingMaintId, ...maintData } : maint
         ));
         Alert.alert("Éxito", "Mantenimiento actualizado correctamente");
       } else {
         const newMaint = await createMaintenance(maintData);
+        console.log('Nuevo mantenimiento creado:', newMaint); // Depuración
         setMantenimiento([...mantenimiento, newMaint]);
         Alert.alert("Éxito", "Mantenimiento creado correctamente");
       }
@@ -103,117 +113,116 @@ const MantenimientoScreen = () => {
       setIsFormVisible(false);
       setEditingMaintId(null);
     } catch (error) {
+      console.error('Error en handleSubmit:', error);
       Alert.alert("Error", "No se pudo guardar el mantenimiento");
     }
   };
 
-  // Load data on component mount
   useEffect(() => {
     loadMaintenance();
     loadEquipment();
   }, []);
 
-  // Get equipment name from ID
   const getEquipmentName = (equipo_id) => {
     const equip = equipment.find(e => e.equipo_id === parseInt(equipo_id));
     return equip ? equip.nombre : 'Sin equipo';
   };
 
-  // Responsive widths for container and maintenance cards
-  const containerWidth = width > 1200 ? '1000px' : width > 800 ? '800px' : width > 600 ? '600px' : '95%';
-  const maintItemWidth = width > 1200 ? '30%' : width > 600 ? '45%' : '90%';
+  const isWeb = Platform.OS === 'web';
+  const cardWidth = isWeb ? (width > 1200 ? 600 : width > 800 ? 500 : width > 600 ? 400 : '90%') : '90%';
+  const containerWidth = isWeb ? (width > 1200 ? 1000 : width > 800 ? 800 : width > 600 ? 600 : '90%') : '100%';
 
-  // Render form for creating/editing maintenance
   if (isFormVisible) {
     return (
       <Layout>
-        <View style={[styles.formContainer, { width: containerWidth, marginHorizontal: 'auto' }]}>
-          {/* Form title */}
-          <Text style={styles.title}>{editingMaintId ? "Editar Mantenimiento" : "Nuevo Mantenimiento"}</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={form.equipo_id}
-              style={styles.picker}
-              onValueChange={(itemValue) => setForm({ ...form, equipo_id: itemValue })}
-            >
-              <Picker.Item label="Seleccione equipo" value="" />
-              {equipment.map(equip => (
-                <Picker.Item key={equip.equipo_id} label={equip.nombre} value={equip.equipo_id.toString()} />
-              ))}
-            </Picker>
+        
+          <View style={[styles.formContainer, { width: cardWidth }]}>
+            <Text style={styles.title}>{editingMaintId ? "Editar Mantenimiento" : "Nuevo Mantenimiento"}</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={form.equipo_id}
+                style={styles.picker}
+                onValueChange={(itemValue) => setForm({ ...form, equipo_id: itemValue })}
+              >
+                <Picker.Item label="Seleccione equipo" value="" />
+                {equipment.map(equip => (
+                  <Picker.Item
+                    key={equip.equipo_id.toString()}
+                    label={equip.nombre}
+                    value={equip.equipo_id.toString()}
+                  />
+                ))}
+              </Picker>
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Fecha Inicio (YYYY-MM-DD)"
+              placeholderTextColor="#aaa"
+              value={form.fecha_inicio}
+              onChangeText={(text) => setForm({ ...form, fecha_inicio: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Fecha Fin (YYYY-MM-DD)"
+              placeholderTextColor="#aaa"
+              value={form.fecha_fin}
+              onChangeText={(text) => setForm({ ...form, fecha_fin: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Descripción"
+              placeholderTextColor="#aaa"
+              value={form.descripcion}
+              onChangeText={(text) => setForm({ ...form, descripcion: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Técnico"
+              placeholderTextColor="#aaa"
+              value={form.tecnico}
+              onChangeText={(text) => setForm({ ...form, tecnico: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Costo"
+              placeholderTextColor="#aaa"
+              value={form.costo}
+              keyboardType="numeric"
+              onChangeText={(text) => setForm({ ...form, costo: text })}
+            />
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>Guardar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsFormVisible(false)}>
+              <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
           </View>
-          <TextInput
-            style={styles.input}
-            placeholder="Fecha Inicio (YYYY-MM-DD)"
-            placeholderTextColor="#aaa"
-            value={form.fecha_inicio}
-            onChangeText={(text) => setForm({ ...form, fecha_inicio: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Fecha Fin (YYYY-MM-DD)"
-            placeholderTextColor="#aaa"
-            value={form.fecha_fin}
-            onChangeText={(text) => setForm({ ...form, fecha_fin: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Descripción"
-            placeholderTextColor="#aaa"
-            value={form.descripcion}
-            onChangeText={(text) => setForm({ ...form, descripcion: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Técnico"
-            placeholderTextColor="#aaa"
-            value={form.tecnico}
-            onChangeText={(text) => setForm({ ...form, tecnico: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Costo"
-            placeholderTextColor="#aaa"
-            value={form.costo}
-            keyboardType="numeric"
-            onChangeText={(text) => setForm({ ...form, costo: text })}
-          />
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Guardar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => setIsFormVisible(false)}>
-            <Text style={styles.buttonText}>Cancelar</Text>
-          </TouchableOpacity>
-        </View>
+        
       </Layout>
     );
   }
 
-  // Render maintenance list with side-by-side cards
   return (
     <Layout>
-      {/* Header with title and new maintenance button */}
-      <View style={[styles.header, { maxWidth: containerWidth, marginHorizontal: 'auto' }]}>
+      <View style={[styles.header, isWeb && { maxWidth: containerWidth, marginHorizontal: 'auto' }]}>
         <Text style={styles.title}>Mantenimiento</Text>
-        <TouchableOpacity style={styles.newButton} onPress={() => setIsFormVisible(true)}>
+        <TouchableOpacity style={styles.newButton} onPress={handleNew}>
           <Text style={styles.buttonText}>Nuevo</Text>
         </TouchableOpacity>
       </View>
       <ScrollView
-        contentContainerStyle={[styles.listScroll, { paddingHorizontal: 10 }]}
-        style={{ maxHeight: '80vh', width: '100%' }}
+        contentContainerStyle={[styles.listScroll, isWeb && { alignItems: 'center', paddingHorizontal: 10 }]}
+        style={[isWeb && { maxHeight: height * 0.8, width: '100%' }]}
       >
-        {/* Container for side-by-side maintenance cards */}
-        <View style={[styles.listContainer, { width: containerWidth, marginHorizontal: 'auto' }]}>
+        <View style={[styles.listContainer, { width: containerWidth }]}>
           {mantenimiento.length === 0 ? (
             <Text style={styles.noDataText}>No hay mantenimientos disponibles</Text>
           ) : (
             mantenimiento.map((maint, index) => (
               <View
                 key={maint.mantenimiento_id?.toString() ?? `maint-${index}`}
-                style={[styles.maintItem, { width: maintItemWidth, marginHorizontal: '1%' }]}
+                style={[styles.maintItem, isWeb && { width: cardWidth, marginHorizontal: 'auto' }]}
               >
-                {/* Maintenance details */}
                 <Text style={styles.itemTitle}>Mantenimiento #{maint.mantenimiento_id}</Text>
                 <Text style={styles.itemText}>Equipo: {getEquipmentName(maint.equipo_id)}</Text>
                 <Text style={styles.itemText}>Fecha Inicio: {maint.fecha_inicio || 'No especificada'}</Text>
@@ -234,7 +243,6 @@ const MantenimientoScreen = () => {
           )}
         </View>
       </ScrollView>
-      {/* Web-friendly delete confirmation modal */}
       <Modal
         visible={isDeleteModalVisible}
         transparent={true}
@@ -260,7 +268,6 @@ const MantenimientoScreen = () => {
   );
 };
 
-// Styles matching EquipmentScreen.jsx, optimized for web and mobile
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -269,7 +276,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 15,
     paddingHorizontal: 15,
-    marginTop: 5,
+    marginTop: 15,
   },
   title: {
     color: '#ffffff',
@@ -284,10 +291,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContainer: {
-    flexDirection: 'row', // Arrange items side by side
-    flexWrap: 'wrap', // Wrap to next row when needed
-    justifyContent: 'space-between',
+    flex: 1,
     width: '100%',
+    alignItems: 'center',
   },
   listScroll: {
     flexGrow: 1,
@@ -300,6 +306,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.18)',
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -321,7 +330,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
-    width: '100%',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -340,11 +348,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginLeft: 10,
   },
+  formScroll: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    minHeight: height * 0.9,
+  },
   formContainer: {
     backgroundColor: 'rgba(30, 30, 60, 0.95)',
     borderRadius: 18,
     padding: 24,
     width: '100%',
+    maxWidth: 600,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -404,10 +420,14 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'rgba(30, 30, 60, 0.95)',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 18,
+    padding: 24,
     width: '90%',
     maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
     alignItems: 'center',
   },
   modalTitle: {

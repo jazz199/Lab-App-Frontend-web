@@ -1,17 +1,20 @@
 import React from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+
 const Layout = ({ children }) => {
   return (
     <LinearGradient
       colors={[
-        'rgb(5, 6, 75)',   // Azul marino profundo (inicio)
-        'rgba(5, 6, 75, 0.85)', // Azul marino con opacidad (centro)
-        'rgba(5, 6, 75, 0.65)'  // Azul marino más claro (fin)
+        'rgba(5, 6, 75, 0.85)',  // Azul marino con opacidad (transición)
+        'rgb(5, 6, 75)',         // Azul marino intenso (centro)
+        'rgba(5, 6, 75, 0.85)',
+        'rgb(255, 215, 0)',      // Amarillo intenso (arriba)
+          // Azul marino con opacidad (abajo)
       ]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      locations={[0, 0.5, 1]}
+      locations={[0, 0.25, 0.65, 1]}
+      start={{ x: 0.2, y: 0 }}
+      end={{ x: 0.8, y: 1 }}
       style={styles.gradient}
     >
       <View style={styles.container}>{children}</View>

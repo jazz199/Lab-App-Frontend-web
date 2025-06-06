@@ -1,4 +1,5 @@
-const BASE_API = 'http://192.168.1.5:3000';
+//const BASE_API = 'http://192.168.1.5:3000';
+const BASE_API = 'https://lab-app-production.up.railway.app'; // Cambia esto a tu URL de API real
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Funciones para usuarios

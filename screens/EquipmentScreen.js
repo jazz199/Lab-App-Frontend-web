@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, Modal, Pressable, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, Alert, Modal, Pressable, ScrollView, Dimensions, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getEquipment, createEquipment, updateEquipment, deleteEquipment, getLaboratories, getEquipmentCategories } from '../api';
 import Layout from '../components/layout';
-import { useWindowDimensions } from 'react-native';
 
-// Component to manage equipment, displaying items side by side on web
+const { width, height } = Dimensions.get('window');
+
 const EquipmentScreen = () => {
-  // Get window width for responsive layout
-  const { width } = useWindowDimensions();
   const [equipment, setEquipment] = useState([]);
   const [laboratories, setLaboratories] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -26,43 +24,44 @@ const EquipmentScreen = () => {
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [equipToDelete, setEquipToDelete] = useState(null);
 
-  // Load equipment data from API
   const loadEquipment = async () => {
     try {
       const data = await getEquipment();
-      setEquipment(data);
+      console.log('Datos de equipos:', data); // Depuración
+      const validData = data.filter(equip => equip.equipo_id !== undefined && equip.equipo_id !== null);
+      setEquipment(validData);
     } catch (error) {
       console.error('Error en loadEquipment:', error);
     }
   };
 
-  // Load laboratories data from API
   const loadLaboratories = async () => {
     try {
       const data = await getLaboratories();
-      setLaboratories(data);
+      console.log('Datos de laboratorios:', data); // Depuración
+      const validData = data.filter(lab => lab.laboratorio_id !== undefined && lab.laboratorio_id !== null);
+      setLaboratories(validData);
     } catch (error) {
       console.error('Error en loadLaboratories:', error);
     }
   };
 
-  // Load categories data from API
   const loadCategories = async () => {
     try {
       const data = await getEquipmentCategories();
-      setCategories(data);
+      console.log('Datos de categorías:', data); // Depuración
+      const validData = data.filter(cat => cat.categoria_id !== undefined && cat.categoria_id !== null);
+      setCategories(validData);
     } catch (error) {
       console.error('Error en loadCategories:', error);
     }
   };
 
-  // Open delete confirmation modal
   const handleDelete = (id) => {
     setEquipToDelete(id);
     setIsDeleteModalVisible(true);
   };
 
-  // Confirm deletion and update state
   const confirmDelete = async () => {
     try {
       await deleteEquipment(equipToDelete);
@@ -77,7 +76,6 @@ const EquipmentScreen = () => {
     }
   };
 
-  // Populate form for editing equipment
   const handleEdit = (equip) => {
     setForm({
       nombre: equip.nombre || '',
@@ -92,7 +90,20 @@ const EquipmentScreen = () => {
     setIsFormVisible(true);
   };
 
-  // Submit form to create or update equipment
+  const handleNew = () => {
+    setForm({
+      nombre: '',
+      codigo_inventario: '',
+      categoria_id: '',
+      laboratorio_id: '',
+      estado: 'disponible',
+      descripcion: '',
+      fecha_adquisicion: '',
+    });
+    setEditingEquipId(null);
+    setIsFormVisible(true);
+  };
+
   const handleSubmit = async () => {
     try {
       const equipData = {
@@ -101,149 +112,165 @@ const EquipmentScreen = () => {
         laboratorio_id: form.laboratorio_id ? parseInt(form.laboratorio_id) : null,
       };
       if (editingEquipId) {
-        await updateEquipment(editingEquipId, equipData);
+        const updatedEquip = await updateEquipment(editingEquipId, equipData);
+        console.log('Equipo actualizado:', updatedEquip); // Depuración
         setEquipment(equipment.map(equip =>
-          equip.equipo_id === editingEquipId ? { ...equip, ...equipData } : equip
+          equip.equipo_id === editingEquipId ? { equipo_id: editingEquipId, ...equipData } : equip
         ));
         Alert.alert("Éxito", "Equipo actualizado correctamente");
       } else {
         const newEquip = await createEquipment(equipData);
+        console.log('Nuevo equipo creado:', newEquip); // Depuración
         setEquipment([...equipment, newEquip]);
         Alert.alert("Éxito", "Equipo creado correctamente");
       }
-      setForm({ nombre: '', codigo_inventario: '', categoria_id: '', laboratorio_id: '', estado: 'disponible', descripcion: '', fecha_adquisicion: '' });
+      setForm({
+        nombre: '',
+        codigo_inventario: '',
+        categoria_id: '',
+        laboratorio_id: '',
+        estado: 'disponible',
+        descripcion: '',
+        fecha_adquisicion: '',
+      });
       setIsFormVisible(false);
       setEditingEquipId(null);
     } catch (error) {
+      console.error('Error en handleSubmit:', error);
       Alert.alert("Error", "No se pudo guardar el equipo");
     }
   };
 
-  // Load data on component mount
   useEffect(() => {
     loadEquipment();
     loadLaboratories();
     loadCategories();
   }, []);
 
-  // Get category name from ID
   const getCategoryName = (categoria_id) => {
     const category = categories.find(cat => cat.categoria_id === parseInt(categoria_id));
     return category ? category.nombre : 'Sin categoría';
   };
 
-  // Get laboratory name from ID
   const getLaboratoryName = (laboratorio_id) => {
     const lab = laboratories.find(lab => lab.laboratorio_id === parseInt(laboratorio_id));
     return lab ? lab.nombre : 'Sin laboratorio';
   };
 
-  // Responsive widths for container and equipment cards
-  const containerWidth = width > 1200 ? '1000px' : width > 800 ? '800px' : width > 600 ? '600px' : '95%';
-  const equipItemWidth = width > 1200 ? '30%' : width > 600 ? '45%' : '90%';
+  const isWeb = Platform.OS === 'web';
+  const cardWidth = isWeb ? (width > 1200 ? 600 : width > 800 ? 500 : width > 600 ? 400 : '90%') : '90%';
+  const containerWidth = isWeb ? (width > 1200 ? 1000 : width > 800 ? 800 : width > 600 ? 600 : '90%') : '100%';
 
   if (isFormVisible) {
     return (
       <Layout>
-        <View style={[styles.formContainer, { width: containerWidth, marginHorizontal: 'auto' }]}>
-          <Text style={styles.title}>{editingEquipId ? "Editar Equipo" : "Nuevo Equipo"}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre"
-            placeholderTextColor="#aaa"
-            value={form.nombre}
-            onChangeText={(text) => setForm({ ...form, nombre: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Código de Inventario"
-            placeholderTextColor="#aaa"
-            value={form.codigo_inventario}
-            onChangeText={(text) => setForm({ ...form, codigo_inventario: text })}
-          />
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={form.categoria_id}
-              style={styles.picker}
-              onValueChange={(itemValue) => setForm({ ...form, categoria_id: itemValue })}
-            >
-              <Picker.Item label="Sin categoría" value="" />
-              {categories.map(cat => (
-                <Picker.Item key={cat.categoria_id} label={cat.nombre} value={cat.categoria_id.toString()} />
-              ))}
-            </Picker>
+        
+          <View style={[styles.formContainer, { width: cardWidth }]}>
+            <Text style={styles.title}>{editingEquipId ? "Editar Equipo" : "Nuevo Equipo"}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Nombre"
+              placeholderTextColor="#aaa"
+              value={form.nombre}
+              onChangeText={(text) => setForm({ ...form, nombre: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Código de Inventario"
+              placeholderTextColor="#aaa"
+              value={form.codigo_inventario}
+              onChangeText={(text) => setForm({ ...form, codigo_inventario: text })}
+            />
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={form.categoria_id}
+                style={styles.picker}
+                onValueChange={(itemValue) => setForm({ ...form, categoria_id: itemValue })}
+              >
+                <Picker.Item label="Sin categoría" value="" />
+                {categories.map(cat => (
+                  <Picker.Item
+                    key={cat.categoria_id.toString()}
+                    label={cat.nombre}
+                    value={cat.categoria_id.toString()}
+                  />
+                ))}
+              </Picker>
+            </View>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={form.laboratorio_id}
+                style={styles.picker}
+                onValueChange={(itemValue) => setForm({ ...form, laboratorio_id: itemValue })}
+              >
+                <Picker.Item label="Sin laboratorio" value="" />
+                {laboratories.map(lab => (
+                  <Picker.Item
+                    key={lab.laboratorio_id.toString()}
+                    label={lab.nombre}
+                    value={lab.laboratorio_id.toString()}
+                  />
+                ))}
+              </Picker>
+            </View>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={form.estado}
+                style={styles.picker}
+                onValueChange={(itemValue) => setForm({ ...form, estado: itemValue })}
+              >
+                <Picker.Item label="Disponible" value="disponible" />
+                <Picker.Item label="En uso" value="en_uso" />
+                <Picker.Item label="En mantenimiento" value="en_mantenimiento" />
+                <Picker.Item label="Dado de baja" value="dado_de_baja" />
+              </Picker>
+            </View>
+            <TextInput
+              style={styles.input}
+              placeholder="Descripción"
+              placeholderTextColor="#aaa"
+              value={form.descripcion}
+              onChangeText={(text) => setForm({ ...form, descripcion: text })}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Fecha de Adquisición (YYYY-MM-DD)"
+              placeholderTextColor="#aaa"
+              value={form.fecha_adquisicion}
+              onChangeText={(text) => setForm({ ...form, fecha_adquisicion: text })}
+            />
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.buttonText}>Guardar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setIsFormVisible(false)}>
+              <Text style={styles.buttonText}>Cancelar</Text>
+            </TouchableOpacity>
           </View>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={form.laboratorio_id}
-              style={styles.picker}
-              onValueChange={(itemValue) => setForm({ ...form, laboratorio_id: itemValue })}
-            >
-              <Picker.Item label="Sin laboratorio" value="" />
-              {laboratories.map(lab => (
-                <Picker.Item key={lab.laboratorio_id} label={lab.nombre} value={lab.laboratorio_id.toString()} />
-              ))}
-            </Picker>
-          </View>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={form.estado}
-              style={styles.picker}
-              onValueChange={(itemValue) => setForm({ ...form, estado: itemValue })}
-            >
-              <Picker.Item label="Disponible" value="disponible" />
-              <Picker.Item label="En uso" value="en_uso" />
-              <Picker.Item label="En mantenimiento" value="en_mantenimiento" />
-              <Picker.Item label="Dado de baja" value="dado_de_baja" />
-            </Picker>
-          </View>
-          <TextInput
-            style={styles.input}
-            placeholder="Descripción"
-            placeholderTextColor="#aaa"
-            value={form.descripcion}
-            onChangeText={(text) => setForm({ ...form, descripcion: text })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Fecha de Adquisición (YYYY-MM-DD)"
-            placeholderTextColor="#aaa"
-            value={form.fecha_adquisicion}
-            onChangeText={(text) => setForm({ ...form, fecha_adquisicion: text })}
-          />
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Guardar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={() => setIsFormVisible(false)}>
-            <Text style={styles.buttonText}>Cancelar</Text>
-          </TouchableOpacity>
-        </View>
+        
       </Layout>
     );
   }
 
   return (
     <Layout>
-      {/* Header with title and new equipment button */}
-      <View style={[styles.header, { maxWidth: containerWidth, marginHorizontal: 'auto' }]}>
+      <View style={[styles.header, isWeb && { maxWidth: containerWidth, marginHorizontal: 'auto' }]}>
         <Text style={styles.title}>Equipos</Text>
-        <TouchableOpacity style={styles.newButton} onPress={() => setIsFormVisible(true)}>
+        <TouchableOpacity style={styles.newButton} onPress={handleNew}>
           <Text style={styles.buttonText}>Nuevo</Text>
         </TouchableOpacity>
       </View>
       <ScrollView
-        contentContainerStyle={[styles.listScroll, { paddingHorizontal: 10 }]}
-        style={{ maxHeight: '80vh', width: '100%' }}
+        contentContainerStyle={[styles.listScroll, isWeb && { alignItems: 'center', paddingHorizontal: 10 }]}
+        style={[isWeb && { maxHeight: height * 0.8, width: '100%' }]}
       >
-        {/* Container for side-by-side equipment cards */}
-        <View style={[styles.listContainer, { width: containerWidth, marginHorizontal: 'auto' }]}>
+        <View style={[styles.listContainer, { width: cardWidth }]}>
           {equipment.length === 0 ? (
             <Text style={styles.noDataText}>No hay equipos disponibles</Text>
           ) : (
             equipment.map((equip, index) => (
               <View
                 key={equip.equipo_id?.toString() ?? `equip-${index}`}
-                style={[styles.equipItem, { width: equipItemWidth, marginHorizontal: '1%' }]}
+                style={[styles.equipItem, isWeb && { width: cardWidth, marginHorizontal: 'auto' }]}
               >
                 <Text style={styles.itemTitle}>{equip.nombre}</Text>
                 <Text style={styles.itemText}>Código: {equip.codigo_inventario}</Text>
@@ -251,7 +278,7 @@ const EquipmentScreen = () => {
                 <Text style={styles.itemText}>Laboratorio: {getLaboratoryName(equip.laboratorio_id)}</Text>
                 <Text style={styles.itemText}>Estado: {equip.estado}</Text>
                 <Text style={styles.itemText}>Descripción: {equip.descripcion || 'Sin descripción'}</Text>
-                {/* <Text style={styles.itemText}>Fecha de Adquisición: {equip.fecha_adquisicion || 'No especificada'}</Text> */}
+                <Text style={styles.itemText}>Fecha de Adquisición: {equip.fecha_adquisicion || 'No especificada'}</Text>
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(equip)}>
                     <Text style={styles.buttonText}>Editar</Text>
@@ -265,7 +292,6 @@ const EquipmentScreen = () => {
           )}
         </View>
       </ScrollView>
-      {/* Delete confirmation modal for web-friendly UI */}
       <Modal
         visible={isDeleteModalVisible}
         transparent={true}
@@ -299,7 +325,7 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 15,
     paddingHorizontal: 15,
-    marginTop: 5,
+    marginTop: 15,
   },
   title: {
     color: '#ffffff',
@@ -314,10 +340,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContainer: {
-    flexDirection: 'row', // Arrange items side by side
-    flexWrap: 'wrap', // Wrap to next row when needed
-    justifyContent: 'space-between',
+    flex: 1,
     width: '100%',
+    alignItems: 'center',
   },
   listScroll: {
     flexGrow: 1,
@@ -330,6 +355,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.18)',
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
@@ -351,7 +379,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     marginTop: 20,
-    width: '100%',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -370,11 +397,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginLeft: 10,
   },
+  formScroll: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+    minHeight: height * 0.9,
+  },
   formContainer: {
     backgroundColor: 'rgba(30, 30, 60, 0.95)',
     borderRadius: 18,
     padding: 24,
     width: '100%',
+    maxWidth: 600,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -434,10 +469,14 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'rgba(30, 30, 60, 0.95)',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 18,
+    padding: 24,
     width: '90%',
     maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
     alignItems: 'center',
   },
   modalTitle: {

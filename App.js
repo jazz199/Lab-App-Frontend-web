@@ -51,26 +51,10 @@ const MainTabs = ({ user, role }) => (
   >
     <Tab.Screen name="Home" component={HomeScreen} initialParams={{ user }} options={{ title: "Inicio" }} />
     <Tab.Screen name="Calendario" component={CalendarScreen} options={{ title: "Calendario" }} />
-    {role === "admin" && (
-      <>
-        <Tab.Screen name="Usuarios" component={UserFormScreen} options={{ title: "Usuarios" }} />
-        <Tab.Screen name="Laboratorios" component={LaboratoryScreen} options={{ title: "Laboratorios" }} />
-        <Tab.Screen name="Equipos" component={EquipmentScreen} options={{ title: "Equipos" }} />
-        <Tab.Screen name="Mantenimiento" component={MantenimientoScreen} options={{ title: "Mantenimiento" }} />
-        <Tab.Screen name="Prestamos" component={PrestamosScreen} options={{ title: "Préstamos" }} />
-        <Tab.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} options={{ title: "Reservas" }} />
-      </>
-    )}
-    {(role === "personal" || role === "tecnico") && (
-      <>
-        <Tab.Screen name="Equipos" component={EquipmentScreen} options={{ title: "Equipos" }} />
-        <Tab.Screen name="Mantenimiento" component={MantenimientoScreen} options={{ title: "Mantenimiento" }} />
-      </>
-    )}
   </Tab.Navigator>
 );
 
-// Drawer para web: tabs principales + drawer para las demás (incluye Reporte Labs y Soporte)
+// Drawer para web: las demás ventanas (usuarios, laboratorios, equipos, etc.)
 const WebAdminDrawer = ({ user, onLogout }) => (
   <Drawer.Navigator
     drawerContent={(props) => <CustomDrawerContent {...props} onLogout={onLogout} />}
@@ -86,6 +70,12 @@ const WebAdminDrawer = ({ user, onLogout }) => (
     <Drawer.Screen name="Principal" options={{ title: "Principal" }}>
       {() => <MainTabs user={user} role="admin" />}
     </Drawer.Screen>
+    <Drawer.Screen name="Usuarios" component={UserFormScreen} options={{ title: "Usuarios" }} />
+    <Drawer.Screen name="Laboratorios" component={LaboratoryScreen} options={{ title: "Laboratorios" }} />
+    <Drawer.Screen name="Equipos" component={EquipmentScreen} options={{ title: "Equipos" }} />
+    <Drawer.Screen name="Mantenimiento" component={MantenimientoScreen} options={{ title: "Mantenimiento" }} />
+    <Drawer.Screen name="Prestamos" component={PrestamosScreen} options={{ title: "Préstamos" }} />
+    <Drawer.Screen name="ReservasLaboratorio" component={ReservasLaboratorioScreen} options={{ title: "Reservas" }} />
     <Drawer.Screen name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
     <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
     <Drawer.Screen name="CategoriaEquipos" component={CategoriaEquiposScreen} options={{ title: "Categorías" }} />
@@ -108,6 +98,7 @@ const WebUserDrawer = ({ user, onLogout }) => (
     <Drawer.Screen name="Principal" options={{ title: "Principal" }}>
       {() => <MainTabs user={user} role={user.tipo_usuario} />}
     </Drawer.Screen>
+    {/* Puedes agregar aquí las pantallas que correspondan al usuario normal */}
     <Drawer.Screen name="Soporte" component={SupportScreen} options={{ title: "Soporte" }} />
     <Drawer.Screen name="ReporteLaboratorios" component={UserLabReportScreen} initialParams={{ user }} options={{ title: "Reporte Labs" }} />
   </Drawer.Navigator>
