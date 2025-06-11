@@ -1,5 +1,5 @@
 //const BASE_API = 'http://192.168.1.8:3000';
-//mysql://root:VuWqErUJjxUGatxVHgXOASyJQVVhGugp@nozomi.proxy.rlwy.net:41196/railway
+
 const BASE_API = 'https://lab-app-production.up.railway.app';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
