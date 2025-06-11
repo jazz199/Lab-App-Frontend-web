@@ -6,7 +6,7 @@ const Layout = ({ children }) => {
   return (
     <LinearGradient
       colors={[
-        'rgba(5, 6, 75, 0.85)',  // Azul marino con opacidad (transición)
+        'rgb(2, 3, 55)',  // Azul marino con opacidad (transición)
         'rgb(5, 6, 75)',         // Azul marino intenso (centro)
         'rgba(5, 6, 75, 0.85)',
         'rgb(255, 215, 0)',      // Amarillo intenso (arriba)
