@@ -1,6 +1,6 @@
 //const BASE_API = 'https://empowering-compassion-production-6720.up.railway.app';
 
-const BASE_API = 'https://empowering-compassion-production-6720.up.railway.app';
+const BASE_API = 'https://app-usb-bakent-production.up.railway.app'; // Cambia esto a tu URL de API real
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
